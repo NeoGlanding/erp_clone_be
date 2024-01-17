@@ -1,4 +1,4 @@
 .PHONY: run-srv
 
 run-srv: 
-	CompileDaemon -command "./automa8e_clone"
+	CompileDaemon -build "go build -o bin/automa8e_clone" -command "./bin/automa8e_clone"

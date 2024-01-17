@@ -20,5 +20,7 @@ func PSQLInit() {
 		panic(err)
 	}
 
+	fmt.Println("Success connect to PSQL DB")
+
 	db.PSQL = psql
 }

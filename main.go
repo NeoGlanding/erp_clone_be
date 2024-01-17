@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/initializers"
 	"github.com/joho/godotenv"
 )
@@ -18,5 +19,5 @@ func init() {
 }
 
 func main() {
-	fmt.Println("papa pipi")
+	db.PSQLMigrate()
 }
