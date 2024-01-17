@@ -9,4 +9,5 @@ var PSQL *gorm.DB;
 
 func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.User{})
+	PSQL.AutoMigrate(&models.UserDetails{})
 }
