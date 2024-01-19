@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fmt"
-
+	"github.com/automa8e_clone/constants"
 	"github.com/automa8e_clone/db"
+	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/initializers"
 	"github.com/automa8e_clone/models"
 	"github.com/gin-gonic/gin"
@@ -37,13 +37,23 @@ func Register(c *gin.Context) {
 	hashed, _ :=bcrypt.GenerateFromPassword([]byte(body.Password), 8)
 
 	if (err != nil) {
-		fmt.Println("err ->", err)	
+		c.Set("error", helpers.DestructValidationError(&err))
+		c.Set("error-type", constants.REQUEST_VALIDATION_ERROR)
+		return
 	}
 
 	user := models.User{
 		Email: body.Email,
 		Password: string(hashed),
 		Phone: &body.Phone,
+	}
+
+	var existingUser models.User
+
+	result := db.PSQL.Where("email = ? OR phone = ?", body.Email, body.Phone).First(&existingUser)
+
+	if (result.RowsAffected > 0) {
+		c.Set("error", "User already exist")
 	}
 
 	db.PSQL.Create(&user)

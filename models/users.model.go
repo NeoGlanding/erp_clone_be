@@ -10,9 +10,9 @@ import (
 
 type User struct {
 	Id			string 		`gorm:"primaryKey"`
-	Email		string			
+	Email		string		`gorm:"unique"`
 	Password	string
-	Phone		*string
+	Phone		*string		`gorm:"unique"`
 	CreatedAt	time.Time
 	UpdatedAt	*time.Time
 	DeletedAt	*time.Time
