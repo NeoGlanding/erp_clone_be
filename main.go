@@ -19,6 +19,7 @@ func init() {
 	}
 
 	initializers.PSQLInit()
+	initializers.Validator()
 }
 
 func main() {
