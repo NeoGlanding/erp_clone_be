@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/automa8e_clone/config"
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/initializers"
 	"github.com/automa8e_clone/routes"
@@ -20,7 +22,11 @@ func init() {
 
 	initializers.PSQLInit()
 	db.PSQLSeed()
+
 	initializers.Validator()
+
+	config.AppConfig.JWT_SECRET = os.Getenv("JWT_SECRET")
+	config.AppConfig.JWT_TOKEN_VERSION = os.Getenv("JWT_TOKEN_VERSION")
 }
 
 func main() {

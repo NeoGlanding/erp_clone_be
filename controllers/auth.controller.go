@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/automa8e_clone/constants"
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
@@ -49,8 +51,15 @@ func Login(c *gin.Context) {
 		return
 	}
 	
+
+	access_token, err := helpers.GenerateJWT(constants.ACCESS_TOKEN_REF,10, &user);
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	
-	c.Set("data", map[string]interface{}{"message": "Successfully logged in"})
+	c.Set("data", map[string]interface{}{"access_token": access_token})
 }
 
 func Register(c *gin.Context) {
