@@ -9,5 +9,6 @@ import (
 func Party(r *gin.Engine) {
 	party := r.Group("/parties")
 
-	party.GET("/", middlewares.TokenAuthenticationMiddleware, controllers.GetParty)
+	party.GET("/", middlewares.TokenAuthenticationMiddleware, controllers.GetParty, middlewares.ResponseMiddlewares)
+	party.POST("/", middlewares.TokenAuthenticationMiddleware, controllers.PostParty, middlewares.ResponseMiddlewares)
 }

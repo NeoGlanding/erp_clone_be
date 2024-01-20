@@ -14,6 +14,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.User{})
 	PSQL.AutoMigrate(&models.UserDetails{})
 	PSQL.AutoMigrate(&models.Country{})
+	PSQL.AutoMigrate(&models.Party{})
 }
 
 func PSQLSeed() {
