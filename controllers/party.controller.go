@@ -10,6 +10,7 @@ import (
 	"github.com/automa8e_clone/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm/clause"
 )
 
 type BodyPostParty struct {
@@ -51,9 +52,7 @@ func PostParty(c *gin.Context) {
 		CountryId: body.CountryId,
 	}
 
-	
-
-	resultParty := db.PSQL.Create(&party)
+	resultParty := db.PSQL.Clauses(clause.Returning{}).Create(&party)
 
 	permission := models.UserPartyPermission{
 		UserId: user["sub"].(string),
@@ -77,7 +76,7 @@ func PostParty(c *gin.Context) {
 	}
 
 
-	c.Set("data", party)
+	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": party.ID})
 	
 
 }

@@ -16,14 +16,18 @@ type Party struct {
 	AddressLine3	*string		`json:"address_line_3"`
 	PostalCode		string		`validate:"required" json:"postal_code"`
 	CountryId		string		`json:"country_id"`
-	Country			Country
+	Country			Country		`json:"country"`
 
 	CreatedAt		time.Time	`json:"created_at"`
 	UpdatedAt		*time.Time	`json:"updated_at"`
-	DeletedAt		*time.Time	
+	DeletedAt		*time.Time	`json:"-"`
 }
 
 func (p *Party) BeforeCreate(tx *gorm.DB) (err error) {
 	p.ID = uuid.New().String()
 	return
+}
+
+func (p *Party) AfterSave(tx *gorm.DB) (err error) {
+	return err;
 }
