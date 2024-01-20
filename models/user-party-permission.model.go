@@ -13,11 +13,11 @@ const (
 )
 
 type UserPartyPermission struct {
-	gorm.Model
 	ID				string		`gorm:"primaryKey" json:"id"`
 	UserId			string		`json:"user_id"`
 	User			User		`json:"user"`
 	PartyId			string		`json:"party_id"`
+	Party			Party		`json:"party"`
 	Permission		Role		`json:"permission"`
 }
 

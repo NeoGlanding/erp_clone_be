@@ -13,6 +13,7 @@ type User struct {
 	Email		string		`gorm:"unique"`
 	Password	string
 	Phone		*string		`gorm:"unique"`
+	Party		[]Party		`gorm:"many2many:user_party_permissions"`
 	CreatedAt	time.Time
 	UpdatedAt	*time.Time
 	DeletedAt	*time.Time

@@ -8,7 +8,7 @@ import (
 )
 
 type Party struct {
-	gorm.Model
+	// gorm.Model
 	ID				string		`gorm:"primaryKey" json:"id"`
 	Name			string		`validate:"required" json:"name"`
 	AddressLine1	string		`validate:"required" json:"address_line_1"`
@@ -17,6 +17,7 @@ type Party struct {
 	PostalCode		string		`validate:"required" json:"postal_code"`
 	CountryId		string		`json:"country_id"`
 	Country			Country		`json:"country"`
+	Users			[]User		`json:"users" gorm:"many2many:user_party_permissions"`
 
 	CreatedAt		time.Time	`json:"created_at"`
 	UpdatedAt		*time.Time	`json:"updated_at"`

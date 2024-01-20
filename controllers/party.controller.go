@@ -22,9 +22,27 @@ type BodyPostParty struct {
 	CountryId		string		`json:"country_id"`
 }
 
-func GetParty(c *gin.Context) {
+func GetParties(c *gin.Context) {
 
-	c.Set("data", map[string]interface{}{"message": "Success"})
+	var data []models.UserPartyPermission
+
+	x, _ := c.Get("user")
+	user := x.(jwt.MapClaims)
+
+	db.PSQL.Limit(10).Where("user_id = ?", user["sub"]).Preload("Party").Preload("User").Preload("Party.Country").Find(&data)
+
+	var formattedData []models.Party = []models.Party{}
+
+	for _, item := range data {
+		var singleData models.Party = models.Party{}
+		singleData = item.Party
+		add :=append(formattedData, singleData)
+		formattedData = add;
+	}
+
+	fmt.Println(formattedData)
+
+	c.Set("data", formattedData)
 }
 
 func PostParty(c *gin.Context) {
@@ -52,7 +70,7 @@ func PostParty(c *gin.Context) {
 		CountryId: body.CountryId,
 	}
 
-	resultParty := db.PSQL.Clauses(clause.Returning{}).Create(&party)
+	resultParty := db.PSQL.Clauses(clause.Returning{}).Preload("Country").Create(&party)
 
 	permission := models.UserPartyPermission{
 		UserId: user["sub"].(string),
@@ -76,7 +94,7 @@ func PostParty(c *gin.Context) {
 	}
 
 
-	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": party.ID})
+	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": party})
 	
 
 }
