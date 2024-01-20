@@ -32,3 +32,7 @@ func msgForError(err string) string {
 		return "Invalid format"
 	}
 }
+
+func FindTotalPage(totalRecords int64, pageSize int) int {
+	return int((totalRecords + int64(pageSize) - 1) / int64(pageSize))
+}

@@ -8,10 +8,17 @@ import (
 	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/initializers"
 	"github.com/automa8e_clone/models"
+	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm/clause"
 )
+
+
+type ReturnParties struct {
+	Data			[]models.Party 					`json:"data"`
+	Pagination		types.PaginationResponse		`json:"pagination"`
+}
 
 type BodyPostParty struct {
 	CompanyName		string		`validate:"required" json:"company_name"`
@@ -25,11 +32,19 @@ type BodyPostParty struct {
 func GetParties(c *gin.Context) {
 
 	var data []models.UserPartyPermission
+	var count int64;
 
-	x, _ := c.Get("user")
-	user := x.(jwt.MapClaims)
+	userCtx, _ := c.Get("user")
+	user := userCtx.(jwt.MapClaims)
 
-	db.PSQL.Limit(10).Where("user_id = ?", user["sub"]).Preload("Party").Preload("User").Preload("Party.Country").Find(&data)
+	paginationCtx ,_ := c.Get("pagination")
+	pagination := paginationCtx.(types.PaginationQuery)
+
+	// Find Data
+	db.PSQL.Offset(pagination.Offset).Limit(pagination.PageSize).Where("user_id = ?", user["sub"]).Preload("Party").Preload("User").Preload("Party.Country").Find(&data)
+
+	// Find Total Data
+	db.PSQL.Model(&models.UserPartyPermission{}).Where("user_id = ?", user["sub"]).Count(&count)
 
 	var formattedData []models.Party = []models.Party{}
 
@@ -40,9 +55,17 @@ func GetParties(c *gin.Context) {
 		formattedData = add;
 	}
 
-	fmt.Println(formattedData)
+	response := ReturnParties{
+		Data: formattedData,
+		Pagination: types.PaginationResponse{
+			TotalData: count,
+			CurrentPage: pagination.Page,
+			TotalPage: int(helpers.FindTotalPage(count, pagination.PageSize)),
+			PageSize: pagination.PageSize,
+		},
+	}
 
-	c.Set("data", formattedData)
+	c.Set("data", response)
 }
 
 func PostParty(c *gin.Context) {
