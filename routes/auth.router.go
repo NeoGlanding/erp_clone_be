@@ -9,6 +9,6 @@ import (
 func Auth(r *gin.Engine) {
 	auth := r.Group("/auth")
 
-	auth.POST("/login", controllers.Login)
+	auth.POST("/login", controllers.Login, middlewares.ResponseMiddlewares)
 	auth.POST("/register", controllers.Register, middlewares.ResponseMiddlewares)
 }

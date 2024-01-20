@@ -13,13 +13,18 @@ func ResponseMiddlewares(c *gin.Context) {
 	data, _ := c.Get("data")
 	err, _ := c.Get("error")
 	errType, _ := c.Get("error-type")
+	errCode, _ := c.Get("error-code")
 
 
 	if (err != nil) {
 		if (errType == constants.REQUEST_VALIDATION_ERROR) {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "errors": err})
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": err})
+			var defaultErrorCode int = 400
+			if (errCode != nil) {
+				defaultErrorCode = errCode.(int)
+			}
+			c.JSON(defaultErrorCode, gin.H{"status": defaultErrorCode, "message": err})
 		}
 
 		return

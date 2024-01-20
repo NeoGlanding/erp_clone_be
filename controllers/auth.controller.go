@@ -11,8 +11,8 @@ import (
 )
 
 type LoginBody struct {
-	Email 		string 	`json:"email"`
-	Password 	string 	`json:"password"`
+	Email 		string 	`json:"email" validate:"required,email"`
+	Password 	string 	`json:"password" validate:"required"`
 }
 
 type RegisterBody struct {
@@ -24,7 +24,33 @@ type RegisterBody struct {
 func Login(c *gin.Context) {
 	var body LoginBody;
 	c.BindJSON(&body)
-	c.JSON(200, gin.H{"email": body.Email, "password": body.Password})
+	
+	err := initializers.Validate.Struct(body)
+
+	if (err != nil) {
+		c.Set("error", helpers.DestructValidationError(&err))
+		c.Set("error-type", constants.REQUEST_VALIDATION_ERROR)
+		return
+	}
+
+	user := models.User{
+		Email: body.Email,
+	}
+
+	db.PSQL.Where("email = ?", body.Email).Find(&user)
+
+
+	// Compare hash
+	passwordError := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+	
+	if (passwordError != nil) {
+		c.Set("error", "Invalid credential")
+		c.Set("error-code", 401)
+		return
+	}
+	
+	
+	c.Set("data", map[string]interface{}{"message": "Successfully logged in"})
 }
 
 func Register(c *gin.Context) {
@@ -34,7 +60,7 @@ func Register(c *gin.Context) {
 	err := initializers.Validate.Struct(body)
 
 	// Hash
-	hashed, _ :=bcrypt.GenerateFromPassword([]byte(body.Password), 8)
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(body.Password), 8)
 
 	if (err != nil) {
 		c.Set("error", helpers.DestructValidationError(&err))
