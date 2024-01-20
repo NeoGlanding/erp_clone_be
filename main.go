@@ -39,6 +39,7 @@ func main() {
 	})
 
 	routes.Auth(r)
+	routes.Party(r)
 
 	r.Run()
 
