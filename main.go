@@ -19,6 +19,7 @@ func init() {
 	}
 
 	initializers.PSQLInit()
+	db.PSQLSeed()
 	initializers.Validator()
 }
 
