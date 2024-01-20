@@ -1,8 +1,6 @@
 package middlewares
 
 import (
-	// "fmt"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -17,7 +15,6 @@ func TokenAuthenticationMiddleware(c *gin.Context) {
 
 	if validTokenFormat {
 		token = strings.Split(token, " ")[1];
-		fmt.Println("token ->", token)
 		
 		claims, err := helpers.ParseJWT(token)
 
@@ -27,8 +24,8 @@ func TokenAuthenticationMiddleware(c *gin.Context) {
 			return
 		}
 
-		fmt.Println(claims)
-
+		
+		c.Set("user", claims)
 		
 	}
 

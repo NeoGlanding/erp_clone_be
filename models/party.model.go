@@ -15,6 +15,8 @@ type Party struct {
 	AddressLine2	*string		`json:"address_line_2"`
 	AddressLine3	*string		`json:"address_line_3"`
 	PostalCode		string		`validate:"required" json:"postal_code"`
+	CountryId		string		`json:"country_id"`
+	Country			Country
 
 	CreatedAt		time.Time	`json:"created_at"`
 	UpdatedAt		*time.Time	`json:"updated_at"`

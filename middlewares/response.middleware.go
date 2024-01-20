@@ -15,7 +15,6 @@ func ResponseMiddlewares(c *gin.Context) {
 	errType, _ := c.Get("error-type")
 	errCode, _ := c.Get("error-code")
 
-
 	if (err != nil) {
 		if (errType == constants.REQUEST_VALIDATION_ERROR) {
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "errors": err})
