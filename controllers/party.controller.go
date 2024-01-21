@@ -8,6 +8,7 @@ import (
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/initializers"
+	"github.com/automa8e_clone/middlewares"
 	"github.com/automa8e_clone/models"
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
@@ -47,7 +48,10 @@ func GetParties(c *gin.Context) {
 	paginationCtx, _ := c.Get("pagination")
 	pagination := paginationCtx.(types.PaginationQuery)
 
-	db.PSQL.
+	queryCtx, _ := c.Get("query")
+	query := queryCtx.(middlewares.TypeQueryMiddleware)
+
+	base := db.PSQL.
 	Table("user_party_permissions").
 	Offset(pagination.Offset).
 	Limit(pagination.PageSize).
@@ -55,8 +59,13 @@ func GetParties(c *gin.Context) {
 	Joins("JOIN countries ON parties.country_id = countries.id").
 	Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country").
 	Order("parties.created_at desc").
-	Where("user_party_permissions.user_id = ?", user["sub"]).
-	Find(&data).
+	Where("user_party_permissions.user_id = ?", user["sub"])
+	
+	if query.SearchExist{
+		base = base.Where("LOWER(parties.name) LIKE LOWER(?)", query.Search)
+	}
+
+	base.Find(&data).
 	Count(&count)
 
 	// Find Total Data
