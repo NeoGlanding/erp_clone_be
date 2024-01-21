@@ -8,6 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func generatePageError(msg string) types.ApiError {
+	return types.ApiError{
+		Field: "page",
+		Message: msg,
+	}
+}
+
+func generatePageSizeError(msg string) types.ApiError {
+	return types.ApiError{
+		Field: "page_size",
+		Message: msg,
+	}
+}
+
+
 func PaginationMiddleware(c *gin.Context) {
 	page, pageExist := c.GetQuery("page")
 	pageSize, pageSizeExist := c.GetQuery("page_size")
@@ -25,13 +40,25 @@ func PaginationMiddleware(c *gin.Context) {
 	intPage, err := strconv.Atoi(page);
 	intPageSize, errPageSize := strconv.Atoi(pageSize)
 
+	
+
 	if err != nil {
-		slice := append(errors, types.ApiError{Message: "Page should be number", Field: "page"})
+		slice := append(errors, generatePageError("Page should be number"))
 		errors = slice
 	}
 
 	if errPageSize != nil {
-		slice := append(errors, types.ApiError{Message: "Page Size should be number", Field: "page_size"})
+		slice := append(errors, generatePageSizeError("Page Size should be number"))
+		errors = slice
+	}
+
+	if intPage <= 0 {
+		slice := append(errors, generatePageError("Page should be more than 0"))
+		errors = slice
+	}
+
+	if intPageSize <= 0 {
+		slice := append(errors, generatePageSizeError("Page Size should be more than 0"))
 		errors = slice
 	}
 
@@ -39,6 +66,7 @@ func PaginationMiddleware(c *gin.Context) {
 		c.JSON(400,gin.H{"status": http.StatusBadRequest, "errors": errors})
 		c.Abort()
 	}
+
 
 	offset := (intPage - 1) * intPageSize
 
