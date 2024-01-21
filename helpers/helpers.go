@@ -34,5 +34,11 @@ func msgForError(err string) string {
 }
 
 func FindTotalPage(totalRecords int64, pageSize int) int {
-	return int((totalRecords + int64(pageSize) - 1) / int64(pageSize))
+	result := int((totalRecords + int64(pageSize) - 1) / int64(pageSize))
+	
+	if result == 0 {
+		return 1
+	}
+
+	return result
 }
