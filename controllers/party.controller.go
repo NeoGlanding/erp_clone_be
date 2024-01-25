@@ -51,25 +51,30 @@ func GetParties(c *gin.Context) {
 	queryCtx, _ := c.Get("query")
 	query := queryCtx.(middlewares.TypeQueryMiddleware)
 
+
 	base := db.PSQL.
 	Table("user_party_permissions").
-	Offset(pagination.Offset).
-	Limit(pagination.PageSize).
 	Joins("JOIN parties ON parties.id = user_party_permissions.party_id").
 	Joins("JOIN countries ON parties.country_id = countries.id").
 	Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country").
-	Order("parties.created_at desc").
 	Where("user_party_permissions.user_id = ?", user["sub"])
+
+
 	
 	if query.SearchExist{
-		base = base.Where("LOWER(parties.name) LIKE LOWER(?)", query.Search)
+		base = base.Where("LOWER(parties.name) LIKE LOWER(?) OR Lower(parties.address_line1) LIKE LOWER(?)", query.Search, query.Search)
 	}
+	
+	if query.SortByExist {
+		base = base.Order(fmt.Sprintf("%s %s", query.SortBy, query.SortDirection))
+	}
+	
+	base.
+	Count(&count).
+	Offset(pagination.Offset).
+	Limit(pagination.PageSize).
+	Find(&data)
 
-	base.Find(&data).
-	Count(&count)
-
-	// Find Total Data
-	// db.PSQL.Model(&models.UserPartyPermission{}).Where("user_id = ?", user["sub"]).Count(&count)
 
 	response := ReturnParties{
 		Data: data,
