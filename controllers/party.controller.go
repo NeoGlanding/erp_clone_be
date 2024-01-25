@@ -140,3 +140,49 @@ func PostParty(c *gin.Context) {
 	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": party})
 
 }
+
+func UpdateParty(c *gin.Context) {
+	id := c.Param("id");
+	userCtx, _ := c.Get("user")
+
+	user := userCtx.(jwt.MapClaims)
+
+	var permission models.UserPartyPermission
+	var body BodyPostParty
+
+	query := db.PSQL.Table("user_party_permissions").
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("party_id = ? AND user_id = ?", id, user["sub"]).
+		Find(&permission)
+
+	if query.RowsAffected == 0 {
+		helpers.SetNotFoundError(c, "Party not found")
+		return
+	}
+
+	c.BindJSON(&body)
+
+	err := initializers.Validate.Struct(body)
+
+	if err != nil {
+		helpers.SetValidationError(c, &err)
+		return
+	}
+
+	var data models.Party
+	var args models.Party = models.Party{
+		ID: id,
+		Name: body.CompanyName,
+		AddressLine1: body.AddressLine1,
+		AddressLine2: &body.AddressLine2,
+		AddressLine3: &body.AddressLine3,
+		PostalCode: body.PostalCode,
+		CountryId: body.CountryId,
+	}
+
+	db.PSQL.Model(&models.Party{}).Where("id = ?", id).Save(&args)
+
+	db.PSQL.Preload("Country").Where("id = ?", id).Find(&data)
+
+	c.Set("data", map[string]interface{}{"message": "Success", "data": data})
+}

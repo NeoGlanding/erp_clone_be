@@ -19,7 +19,7 @@ type Party struct {
 	Country			Country		`json:"country"`
 	Users			[]User		`json:"users" gorm:"many2many:user_party_permissions"`
 
-	CreatedAt		time.Time	`json:"created_at"`
+	CreatedAt		time.Time	`json:"created_at" gorm:"<-:create"`
 	UpdatedAt		*time.Time	`json:"updated_at"`
 	DeletedAt		*time.Time	`json:"-"`
 }

@@ -11,4 +11,5 @@ func Party(r *gin.Engine) {
 
 	party.GET("/", middlewares.TokenAuthenticationMiddleware, middlewares.PaginationMiddleware, middlewares.QueryMiddleware, controllers.GetParties, middlewares.ResponseMiddlewares)
 	party.POST("/", middlewares.TokenAuthenticationMiddleware, controllers.PostParty, middlewares.ResponseMiddlewares)
+	party.PUT("/:id", middlewares.TokenAuthenticationMiddleware, controllers.UpdateParty, middlewares.ResponseMiddlewares)
 }
