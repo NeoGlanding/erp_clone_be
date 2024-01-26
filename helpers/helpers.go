@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"errors"
+	"time"
 
 	"github.com/automa8e_clone/types"
 	"github.com/go-playground/validator/v10"
@@ -53,19 +54,9 @@ func StringArrayContains(list []string, element string) (bool) {
 	return false
 }
 
-// func StringArrayContainsMoreThanOne(list []string, list2 []string) {
-// 	list1 := []string{"Ihsan", "Ihsen", "Ihsun"}
-// 	list2 := []string{"Ihsan", "Ihsen"}
+func IsValidDateString(dateString string) bool {
+	layout := "2006-01-02"
+	_, err := time.Parse(layout, dateString)
 
-// 	approved := map[string]bool{}
-
-// 	for _, el := range list1 {
-// 		approved[el] = true
-// 	}
-
-
-// 	for _, el := range list2 {
-// 		if approved[el] {
-// 		}
-// 	}
-// }
+	return err == nil
+}

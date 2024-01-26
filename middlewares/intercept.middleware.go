@@ -9,6 +9,10 @@ type PartyIdBody struct {
 	PartyId	 string `json:"party_id"`
 }
 
+type EmailBody struct {
+	Email	string	`json:"email"`
+}
+
 func InterceptParam(param string, properties string) (func (c *gin.Context)) {
 	return func (c *gin.Context) {
 		value := c.Param(param)
@@ -20,4 +24,10 @@ func InterceptPartyIdFromBody (c *gin.Context) {
 	var body PartyIdBody
 	c.ShouldBindBodyWith(&body, binding.JSON)
 	c.Set("party-id", body.PartyId)
+}
+
+func InterceptEmailFromBody(c *gin.Context) {
+	var	body EmailBody
+	c.ShouldBindBodyWith(&body, binding.JSON)
+	c.Set("email", body.Email)
 }
