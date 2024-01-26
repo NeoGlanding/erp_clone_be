@@ -14,6 +14,7 @@ import (
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -36,6 +37,12 @@ type BodyPostParty struct {
 	AddressLine3 string `json:"address_line_3"`
 	PostalCode   string `json:"postal_code"`
 	CountryId    string `json:"country_id"`
+}
+
+type BodyPostAction struct {
+	PartyId		string		`json:"party_id" validate:"required,uuid"`
+	Action		string		`json:"action" validate:"oneof=revoke viewer"`
+	UserEmails	[]string	`json:"user_emails" validate:"required,min=1,dive,email"`
 }
 
 func GetParties(c *gin.Context) {
@@ -212,4 +219,59 @@ func GetParty(c *gin.Context) {
 	db.PSQL.Preload("Country").Where("id = ?", id).Find(&party)
 
 	c.Set("data", party)
+}
+
+func PartyAction(c *gin.Context) {
+	var body BodyPostAction;
+
+	c.BindJSON(&body)
+
+	err := initializers.Validate.Struct(body);
+
+	if body.Action != "viewer" {
+		c.JSON(400,gin.H{"message": "232i9"})
+		c.Abort()
+	}
+
+	if err != nil {
+		helpers.SetValidationError(c, &err)
+	}
+
+	err = db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		
+		for _, email := range body.UserEmails {
+			var user models.User
+			err := tx.Where("email = ?", email).First(&user).Error
+
+			if err != nil {
+				
+				return err
+			}
+
+			value := models.UserPartyPermission{
+				UserId: user.Id,
+				PartyId: body.PartyId,
+				Permission: "VIEWER",
+			}
+
+			var query *gorm.DB
+			
+			if body.Action == "viewer" {
+				query = tx.Table("user_party_permissions").Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", value.UserId, value.PartyId).FirstOrCreate(&value)
+			}
+
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		helpers.SetBadRequestError(c,err.Error())
+		c.Next()
+	} else {
+		c.Set("data", "Successfully modify access")
+
+	}
+
 }

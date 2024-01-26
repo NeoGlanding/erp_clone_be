@@ -27,6 +27,8 @@ func init() {
 
 	config.AppConfig.JWT_SECRET = os.Getenv("JWT_SECRET")
 	config.AppConfig.JWT_TOKEN_VERSION = os.Getenv("JWT_TOKEN_VERSION")
+	config.AppConfig.JWT_TIME_EXPIRATION = os.Getenv("JWT_TOKEN_EXPIRATION_MINUTE")
+
 }
 
 func main() {

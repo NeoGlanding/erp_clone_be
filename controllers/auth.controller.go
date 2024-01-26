@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/automa8e_clone/config"
 	"github.com/automa8e_clone/constants"
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
@@ -51,8 +53,13 @@ func Login(c *gin.Context) {
 		return
 	}
 	
+	expireTime, err := strconv.Atoi(config.AppConfig.JWT_TIME_EXPIRATION)
 
-	access_token, err := helpers.GenerateJWT(constants.ACCESS_TOKEN_REF,10, &user);
+	if err != nil {
+		panic(err)
+	}
+
+	access_token, err := helpers.GenerateJWT(constants.ACCESS_TOKEN_REF,expireTime, &user);
 
 	if err != nil {
 		fmt.Println(err)

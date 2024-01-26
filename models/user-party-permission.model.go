@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -20,6 +22,10 @@ type UserPartyPermission struct {
 	PartyId			string		`json:"party_id"`
 	Party			Party		`json:"party"`
 	Permission		Role		`json:"permission"`
+
+	CreatedAt	time.Time		`json:"created_at" gorm:"<-:create"`
+	UpdatedAt	*time.Time		`json:"updated_at"`
+	DeletedAt	*time.Time		`json:"-"`
 }
 
 func (u *UserPartyPermission) BeforeCreate(tx *gorm.DB) (err error) {
