@@ -10,6 +10,7 @@ type Role string
 const (
 	ADMIN 	Role = "ADMIN"
 	VIEWER	Role = "VIEWER"
+	OWNER	Role = "OWNER"
 )
 
 type UserPartyPermission struct {
