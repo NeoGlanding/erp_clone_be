@@ -15,5 +15,5 @@ func Party(r *gin.Engine) {
 	party.POST("/", middlewares.TokenAuthenticationMiddleware, controllers.PostParty, middlewares.ResponseMiddlewares)
 	party.PUT("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.InterceptParam("id", "party-id"),middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER}),controllers.UpdateParty, middlewares.ResponseMiddlewares)
 
-	party.POST("/action", middlewares.TokenAuthenticationMiddleware, middlewares.InterceptPartyIdFromBody, middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER}),controllers.PartyAction,middlewares.ResponseMiddlewares)
+	party.POST("/action", middlewares.TokenAuthenticationMiddleware, middlewares.InterceptPartyIdFromBody, middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER, types.PERMISSION_ADMIN}),controllers.PartyAction,middlewares.ResponseMiddlewares)
 }

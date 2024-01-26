@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/automa8e_clone/middlewares"
 	"github.com/automa8e_clone/models"
 	"github.com/automa8e_clone/repositories/countries"
+	userpartypermissions "github.com/automa8e_clone/repositories/user-party-permissions"
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -25,9 +27,10 @@ type PartyListElement struct {
 	Country			string			`json:"country"`
 	AddressLine1	string			`json:"address_line_1"`
 	CreatedAt		time.Time		`json:"created_at"`
+	Permission		string			`json:"permission"`
 }
 type ReturnParties struct {
-	Data       []PartyListElement `json:"data"`
+	Data       []PartyListElement 	`json:"data"`
 	Pagination types.PaginationResponse `json:"pagination"`
 }
 
@@ -42,7 +45,7 @@ type BodyPostParty struct {
 
 type BodyPostAction struct {
 	PartyId		string		`json:"party_id" validate:"required,uuid"`
-	Action		string		`json:"action" validate:"oneof=revoke viewer"`
+	Action		string		`json:"action" validate:"oneof=revoke viewer revoke_admin admin"`
 	UserEmails	[]string	`json:"user_emails" validate:"required,min=1,dive,email"`
 }
 
@@ -62,11 +65,13 @@ func GetParties(c *gin.Context) {
 
 
 	base := db.PSQL.
-	Table("user_party_permissions").
-	Joins("JOIN parties ON parties.id = user_party_permissions.party_id").
+	Table("user_party_permissions AS upp").
+	Unscoped().
+	Joins("JOIN parties ON parties.id = upp.party_id").
 	Joins("JOIN countries ON parties.country_id = countries.id").
-	Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country").
-	Where("user_party_permissions.user_id = ?", user["sub"])
+	Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country, upp.permission").
+	Where("upp.user_id = ?", user["sub"]).
+	Where("upp.deleted_at IS NULL")
 
 
 	
@@ -225,6 +230,8 @@ func GetParty(c *gin.Context) {
 func PartyAction(c *gin.Context) {
 	var body BodyPostAction;
 
+	userCtx, _ := c.Get("user"); myUser := userCtx.(jwt.MapClaims)
+
 	c.ShouldBindBodyWith(&body, binding.JSON)
 
 	fmt.Println(body)
@@ -250,14 +257,22 @@ func PartyAction(c *gin.Context) {
 			err := tx.Where("email = ?", email).First(&user).Error
 
 			if err != nil {
-				
 				return err
 			}
+
+			permission, _ := userpartypermissions.RetrievePermission(body.PartyId, myUser["sub"].(string))
+			isOwner := permission == types.PERMISSION_OWNER
+
+			fmt.Println(permission)
 
 			value := models.UserPartyPermission{
 				UserId: user.Id,
 				PartyId: body.PartyId,
 				Permission: "VIEWER",
+			}
+
+			if (body.Action == "admin") {
+				value.Permission = "ADMIN"
 			}
 
 			var query *gorm.DB
@@ -266,6 +281,20 @@ func PartyAction(c *gin.Context) {
 				query = tx.Table("user_party_permissions").Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", value.UserId, value.PartyId).FirstOrCreate(&value)
 			} else if body.Action == "revoke" {
 				query = tx.Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", user.Id, body.PartyId).Delete(&value)
+			} else if body.Action == "admin" {
+				if !isOwner {
+					helpers.SetForbiddenError(c, "Forbidden Resources")
+					return errors.New("you are not owner of this party")
+				} else {
+					query = tx.Table("user_party_permissions").Where("user_id = ? AND party_id = ? AND permission = 'ADMIN'", value.UserId, value.PartyId).FirstOrCreate(&value)
+				}
+			} else if body.Action == "revoke_admin" {
+				if !isOwner {
+					helpers.SetForbiddenError(c, "Forbidden Resources")
+					return errors.New("you are not owner of this party")
+				} else {
+					query = tx.Where("user_id = ? AND party_id = ? AND permission = 'ADMIN'", user.Id, body.PartyId).Delete(&value)
+				}
 			}
 
 			fmt.Println(query.RowsAffected)

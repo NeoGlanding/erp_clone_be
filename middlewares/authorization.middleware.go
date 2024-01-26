@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/automa8e_clone/helpers"
@@ -20,6 +21,8 @@ func PartyAuthorizationRole(authorizedRole []string) (func (c *gin.Context)) {
 
 
 		permission, el := userpartypermissions.RetrievePermission(partyId, user["sub"].(string))
+
+		fmt.Println("permission ->", permission)
 
 		if el {
 			permissed := helpers.StringArrayContains(authorizedRole, permission)

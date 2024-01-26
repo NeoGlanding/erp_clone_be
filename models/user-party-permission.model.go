@@ -25,7 +25,7 @@ type UserPartyPermission struct {
 
 	CreatedAt	time.Time		`json:"created_at" gorm:"<-:create"`
 	UpdatedAt	*time.Time		`json:"updated_at"`
-	DeletedAt	*time.Time		`json:"-"`
+	DeletedAt	gorm.DeletedAt	`json:"-"`
 }
 
 func (u *UserPartyPermission) BeforeCreate(tx *gorm.DB) (err error) {
