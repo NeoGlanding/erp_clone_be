@@ -42,3 +42,30 @@ func FindTotalPage(totalRecords int64, pageSize int) int {
 
 	return result
 }
+
+func StringArrayContains(list []string, element string) (bool) {
+	for _, b := range list {
+		if b == element {
+			return true
+		}
+	}
+
+	return false
+}
+
+// func StringArrayContainsMoreThanOne(list []string, list2 []string) {
+// 	list1 := []string{"Ihsan", "Ihsen", "Ihsun"}
+// 	list2 := []string{"Ihsan", "Ihsen"}
+
+// 	approved := map[string]bool{}
+
+// 	for _, el := range list1 {
+// 		approved[el] = true
+// 	}
+
+
+// 	for _, el := range list2 {
+// 		if approved[el] {
+// 		}
+// 	}
+// }

@@ -120,7 +120,7 @@ func PostParty(c *gin.Context) {
 	permission := models.UserPartyPermission{
 		UserId:     user["sub"].(string),
 		PartyId:    party.ID,
-		Permission: "ADMIN",
+		Permission: "OWNER",
 	}
 
 	resultPermission := db.PSQL.Create(&permission)
