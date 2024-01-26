@@ -186,3 +186,24 @@ func UpdateParty(c *gin.Context) {
 
 	c.Set("data", map[string]interface{}{"message": "Success", "data": data})
 }
+
+func GetParty(c *gin.Context) {
+	id := c.Param("id")
+
+	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
+
+	var data models.UserPartyPermission
+
+	query := db.PSQL.Where("user_id = ? AND party_id = ?", user["sub"], id).Find(&data);
+
+	if query.RowsAffected == 0 {
+		helpers.SetNotFoundError(c,"Party not found")
+		return
+	}
+
+	var party models.Party;
+
+	db.PSQL.Preload("Country").Where("id = ?", id).Find(&party)
+
+	c.Set("data", party)
+}
