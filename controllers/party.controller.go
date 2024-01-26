@@ -10,6 +10,7 @@ import (
 	"github.com/automa8e_clone/initializers"
 	"github.com/automa8e_clone/middlewares"
 	"github.com/automa8e_clone/models"
+	"github.com/automa8e_clone/repositories/countries"
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -62,7 +63,7 @@ func GetParties(c *gin.Context) {
 
 	
 	if query.SearchExist{
-		base = base.Where("LOWER(parties.name) LIKE LOWER(?) OR Lower(parties.address_line1) LIKE LOWER(?)", query.Search, query.Search)
+		base = base.Where("LOWER(parties.name) LIKE LOWER(?) OR Lower(parties.address_line1) LIKE LOWER(?) OR Lower(parties.address_line2) LIKE LOWER(?) OR Lower(parties.address_line3) LIKE LOWER(?)", query.Search, query.Search, query.Search, query.Search)
 	}
 	
 	if query.SortByExist {
@@ -166,6 +167,11 @@ func UpdateParty(c *gin.Context) {
 
 	if err != nil {
 		helpers.SetValidationError(c, &err)
+		return
+	}
+
+	_, exist := countries.FindById(body.CountryId); if !exist {
+		helpers.SetBadRequestError(c, "Country ID is not found")
 		return
 	}
 
