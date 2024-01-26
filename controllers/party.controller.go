@@ -13,6 +13,7 @@ import (
 	"github.com/automa8e_clone/repositories/countries"
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/golang-jwt/jwt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -224,16 +225,20 @@ func GetParty(c *gin.Context) {
 func PartyAction(c *gin.Context) {
 	var body BodyPostAction;
 
-	c.BindJSON(&body)
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	fmt.Println(body)
 
 	err := initializers.Validate.Struct(body);
 
-	if body.Action != "viewer" {
-		c.JSON(400,gin.H{"message": "232i9"})
-		c.Abort()
-	}
+
+	// if body.Action != "viewer" {
+	// 	helpers.SetForbiddenError(c, "Forbidden resources")
+	// 	return
+	// }
 
 	if err != nil {
+		fmt.Println("are you supposed to be cop or something", err)
 		helpers.SetValidationError(c, &err)
 	}
 
@@ -259,8 +264,11 @@ func PartyAction(c *gin.Context) {
 			
 			if body.Action == "viewer" {
 				query = tx.Table("user_party_permissions").Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", value.UserId, value.PartyId).FirstOrCreate(&value)
+			} else if body.Action == "revoke" {
+				query = tx.Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", user.Id, body.PartyId).Delete(&value)
 			}
 
+			fmt.Println(query.RowsAffected)
 		}
 
 		return nil

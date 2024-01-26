@@ -17,6 +17,11 @@ func SetBadRequestError(c *gin.Context, message string) {
 	c.Set("error-code", http.StatusBadRequest)
 }
 
+func SetForbiddenError(c *gin.Context, message string) {
+	c.Set("error", message)
+	c.Set("error-code", http.StatusForbidden)
+}
+
 func SetValidationError(c *gin.Context, err *error) {
 	c.Set("error", DestructValidationError(err))
 	c.Set("error-code", http.StatusBadRequest)
