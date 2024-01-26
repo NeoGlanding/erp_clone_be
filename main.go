@@ -40,6 +40,7 @@ func main() {
 
 	routes.Auth(r)
 	routes.Party(r)
+	routes.Country(r)
 
 	r.Run()
 

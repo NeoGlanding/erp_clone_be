@@ -5,6 +5,14 @@ import (
 	"github.com/automa8e_clone/models"
 )
 
+func FindAll() ([]models.Country, bool) {
+	var data []models.Country;
+	query := db.PSQL.Table("countries").Find(&data)
+	exist := query.RowsAffected > 0
+
+	return data, exist
+}
+
 func FindById(id string) (models.Country, bool) {
 	var data models.Country;
 	query := db.PSQL.Table("countries").Where("id = ?", id).Find(&data)
