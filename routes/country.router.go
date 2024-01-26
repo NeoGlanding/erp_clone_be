@@ -10,4 +10,5 @@ func Country(r *gin.Engine) {
 	country := r.Group("/countries")
 
 	country.GET("/", middlewares.TokenAuthenticationMiddleware, controllers.GetCountries, middlewares.ResponseMiddlewares)
+	country.GET("/:id", middlewares.TokenAuthenticationMiddleware, controllers.GetCountry, middlewares.ResponseMiddlewares)
 }
