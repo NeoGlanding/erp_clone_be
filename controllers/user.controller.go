@@ -27,9 +27,9 @@ type PostOnboardingBody struct {
 }
 
 type PutUpdateCredentials struct {
-	Email		string	`json:"email" validate:"required,email"`
-	Password	string	`json:"password" validate:"required,password"`
-	PhoneNumber	string	`json:"phone_number" validate:"required,e164"`
+	Email		string	`json:"email" validate:"email"`
+	Password	string	`json:"password" validate:"password"`
+	PhoneNumber	string	`json:"phone_number" validate:"e164"`
 }
 
 func OnboardUser(c *gin.Context) {
@@ -87,12 +87,28 @@ func UpdateCredential(c *gin.Context) {
 		return
 	}
 
-	_, exist := users_repository.CheckIsExistByEmailAndPhone(body.Email, body.PhoneNumber);
+	// _, exist := users_repository.CheckIsExistByEmailOrPhone(body.Email, body.PhoneNumber);
 
-	if exist {
-		helpers.SetBadRequestError(c, "Account already exist")
-		return
+	byEmailData, existByEmail := users_repository.CheckIsExistByEmail(body.Email)
+	byPhoneData, existByPhoneData := users_repository.CheckIsExistByPhone(body.PhoneNumber)
+
+
+	if existByEmail {
+		if byEmailData.Id != user["sub"].(string) {
+			helpers.SetConflictError(c, "Email already exist")
+			return
+		}
 	}
+
+	if existByPhoneData {
+		if byPhoneData.Id != user["sub"].(string) {
+			helpers.SetConflictError(c, "Phone already exist")
+			return
+		}
+	}
+
+	fmt.Println(byPhoneData.Id)
+
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(body.Password), 8)
 

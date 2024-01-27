@@ -32,3 +32,8 @@ func SetInternalServerError(c *gin.Context, message string) {
 	c.Set("error", message)
 	c.Set("error-code", http.StatusInternalServerError)
 }
+
+func SetConflictError(c *gin.Context, message string) {
+	c.Set("error", message)
+	c.Set("error-code", http.StatusConflict)
+}
