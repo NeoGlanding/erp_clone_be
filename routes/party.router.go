@@ -12,8 +12,8 @@ func Party(r *gin.Engine) {
 
 	party.GET("/", middlewares.TokenAuthenticationMiddleware, middlewares.PaginationMiddleware, middlewares.QueryMiddleware, controllers.GetParties, middlewares.ResponseMiddlewares)
 	party.GET("/:id", middlewares.TokenAuthenticationMiddleware, controllers.GetParty, middlewares.ResponseMiddlewares)
-	party.POST("/", middlewares.TokenAuthenticationMiddleware, controllers.PostParty, middlewares.ResponseMiddlewares)
-	party.PUT("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.InterceptParam("id", "party-id"),middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER}),controllers.UpdateParty, middlewares.ResponseMiddlewares)
+	party.POST("/", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, controllers.PostParty, middlewares.ResponseMiddlewares)
+	party.PUT("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, middlewares.InterceptParam("id", "party-id"),middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER}),controllers.UpdateParty, middlewares.ResponseMiddlewares)
 
 	party.POST("/action", middlewares.TokenAuthenticationMiddleware, middlewares.InterceptPartyIdFromBody, middlewares.PartyAuthorizationRole([]string{types.PERMISSION_OWNER, types.PERMISSION_ADMIN}),controllers.PartyAction,middlewares.ResponseMiddlewares)
 }

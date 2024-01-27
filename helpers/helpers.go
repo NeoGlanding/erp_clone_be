@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/automa8e_clone/types"
@@ -59,4 +60,22 @@ func IsValidDateString(dateString string) bool {
 	_, err := time.Parse(layout, dateString)
 
 	return err == nil
+}
+
+func FormatToTimestamps(dateString string) (time.Time, error) {
+	timeString := "00:00:00.000000-07"
+
+	// Combine the date and time strings
+	dateTimeString := fmt.Sprintf("%s %s", dateString, timeString)
+
+	// Define the layout for parsing
+	layout := "2006-01-02 15:04:05.999999-07"
+
+	// Parse the combined string into a time.Time value
+	parsedTime, err := time.Parse(layout, dateTimeString)
+	if err != nil {
+		return parsedTime, err
+	} else {
+		return parsedTime, nil
+	}
 }

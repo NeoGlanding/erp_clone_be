@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/initializers"
@@ -38,6 +40,8 @@ func OnboardUser(c *gin.Context) {
 
 	var userDetails models.UserDetails
 
+	date, _ := helpers.FormatToTimestamps(body.DateOfBirth)
+
 	value := models.UserDetails {
 		FirstName: body.FirstName,
 		Surname: body.Surname,
@@ -48,9 +52,13 @@ func OnboardUser(c *gin.Context) {
 		PostalCode: body.PostalCode,
 		CountryId: body.CountryId,
 		IdentityNumber: body.IdentityNumber,
+		DateOfBirth: date,
 	}
 
-	db.PSQL.Table("user_details").FirstOrCreate(&value).Preload("Country").Preload("User").Find(&userDetails)
+	fmt.Println(value.UserId)
+
+	db.PSQL.Table("user_details").Create(&value)
+	db.PSQL.Table("user_details").Preload("Country").Preload("User").Where("user_id = ?", value.UserId).Find(&userDetails)
 
 	c.Set("data", userDetails)
 	

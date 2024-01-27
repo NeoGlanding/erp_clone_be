@@ -9,6 +9,7 @@ import (
 	// "fmt"
 
 	userpartypermissions "github.com/automa8e_clone/repositories/user-party-permissions"
+	users_repository "github.com/automa8e_clone/repositories/users"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -38,5 +39,37 @@ func PartyAuthorizationRole(authorizedRole []string) (func (c *gin.Context)) {
 		}
 
 
+	}
+}
+
+func OnboardedAuthorization(c *gin.Context) {
+	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
+
+	userId := user["sub"].(string)
+
+	data, isOnboarded := users_repository.CheckIsOnboarded(userId);
+
+	if isOnboarded {
+		c.Set("user-details", data)
+		c.Next()
+	} else {
+		c.JSON(http.StatusForbidden, gin.H{"message": "Please onboard yourself first!"})
+		c.Abort()
+	}
+}
+
+func UnonboardedAuthorization(c *gin.Context) {
+	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
+
+	userId := user["sub"].(string)
+
+	_, isOnboarded := users_repository.CheckIsOnboarded(userId);
+
+
+	if !isOnboarded {
+		c.Next()
+	} else {
+		c.JSON(http.StatusForbidden, gin.H{"message": "You are already onboarded!"})
+		c.Abort()
 	}
 }
