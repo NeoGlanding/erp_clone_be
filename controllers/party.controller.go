@@ -13,6 +13,7 @@ import (
 	"github.com/automa8e_clone/models"
 	"github.com/automa8e_clone/repositories/countries"
 	userpartypermissions "github.com/automa8e_clone/repositories/user-party-permissions"
+	users_repository "github.com/automa8e_clone/repositories/users"
 	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -29,8 +30,23 @@ type PartyListElement struct {
 	CreatedAt		time.Time		`json:"created_at"`
 	Permission		string			`json:"permission"`
 }
+
+type PartyUserElement struct {
+	ID				string			`json:"id"`
+	FirstName		string			`json:"first_name"`
+	Surname			string			`json:"surname"`
+	Email			string			`json:"email"`
+	PostalCode		string			`json:"postal_code"`
+	Country			string			`json:"country"`
+	Permission		string			`json:"permission"`
+}
 type ReturnParties struct {
 	Data       []PartyListElement 	`json:"data"`
+	Pagination types.PaginationResponse `json:"pagination"`
+}
+
+type ReturnPartyUsers struct {
+	Data       []PartyUserElement 	`json:"data"`
 	Pagination types.PaginationResponse `json:"pagination"`
 }
 
@@ -260,6 +276,13 @@ func PartyAction(c *gin.Context) {
 				return err
 			}
 
+			_, isOnboarded := users_repository.CheckIsOnboarded(user.Id)
+
+			if !isOnboarded {
+				message := fmt.Sprintf("failed: %s is not onboarded", user.Email)
+				return errors.New(message)
+			}
+
 			permission, _ := userpartypermissions.RetrievePermission(body.PartyId, myUser["sub"].(string))
 			isOwner := permission == types.PERMISSION_OWNER
 
@@ -310,5 +333,47 @@ func PartyAction(c *gin.Context) {
 		c.Set("data", "Successfully modify access")
 
 	}
+}
+
+func GetPartyUsers(c *gin.Context) {
+	id := c.Param("id");
+	paginationCtx, _ := c.Get("pagination"); pagination := paginationCtx.(types.PaginationQuery)
+	queryCtx, _ := c.Get("query"); query := queryCtx.(middlewares.TypeQueryMiddleware)
+
+	var data []PartyUserElement;
+	var count int64;
+
+	fmt.Println("pagination -> ", pagination)
+	fmt.Println("query -> ", query)
+
+	base := db.PSQL.Table("user_party_permissions AS upp").
+			Joins("JOIN users ON users.id = upp.user_id").
+			Joins("JOIN user_details AS details ON details.user_id = users.id").
+			Joins("JOIN countries ON countries.id = details.country_id").
+			Select("users.id, details.first_name, details.surname, users.email, details.postal_code, countries.name AS country, upp.permission").
+			Order("CASE upp.permission WHEN 'OWNER' THEN 1 WHEN 'ADMIN' THEN 2 WHEN 'VIEWER' THEN 3 ELSE 4 END").
+			Where("upp.party_id = ?", id)
+
+	if query.SearchExist {
+		base = base.Where("LOWER(details.first_name) LIKE LOWER(?) OR LOWER(details.surname) LIKE LOWER(?) OR LOWER(users.email) LIKE LOWER(?)", query.Search, query.Search, query.Search)
+	}
+
+	base.
+		Offset(pagination.Offset).
+		Limit(pagination.PageSize).
+		Count(&count).
+		Find(&data)
+
+	response := ReturnPartyUsers{
+		Data: data,
+		Pagination: types.PaginationResponse{
+			TotalData: count,
+			TotalPage: int(helpers.FindTotalPage(count, pagination.PageSize)),
+			CurrentPage: pagination.Page,
+			PageSize: pagination.PageSize,
+		},
+	}
+
+	c.Set("data", response)
 
 }
