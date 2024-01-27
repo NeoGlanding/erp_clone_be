@@ -21,6 +21,7 @@ func GenerateJWT(tokenType string,expireMin int, user *models.User) (string, err
 	claims["email"] = user.Email
 	claims["version"] = os.Getenv("JWT_TOKEN_VERSION")
 	claims["ref"] = tokenType
+	claims["ic"] = user.InformationChanged
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
