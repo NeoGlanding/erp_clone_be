@@ -102,6 +102,7 @@ func UpdateCredential(c *gin.Context) {
 
 	data.Email = body.Email
 	data.Password = string(hashedPassword)
+	data.Phone = &body.PhoneNumber
 	data.InformationChanged++
 
 	db.PSQL.Save(&data)
