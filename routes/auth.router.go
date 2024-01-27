@@ -11,4 +11,5 @@ func Auth(r *gin.Engine) {
 
 	auth.POST("/login", controllers.Login, middlewares.ResponseMiddlewares)
 	auth.POST("/register", controllers.Register, middlewares.ResponseMiddlewares)
+	auth.POST("/refresh-token", controllers.RetrieveAccessToken, middlewares.ResponseMiddlewares)
 }

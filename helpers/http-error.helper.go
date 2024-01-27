@@ -27,3 +27,8 @@ func SetValidationError(c *gin.Context, err *error) {
 	c.Set("error-code", http.StatusBadRequest)
 	c.Set("error-type", constants.REQUEST_VALIDATION_ERROR)
 }
+
+func SetInternalServerError(c *gin.Context, message string) {
+	c.Set("error", message)
+	c.Set("error-code", http.StatusInternalServerError)
+}
