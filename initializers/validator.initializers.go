@@ -10,4 +10,5 @@ var Validate *validator.Validate
 func Validator() {
 	Validate = validator.New(validator.WithRequiredStructEnabled())
 	Validate.RegisterValidation("datestring", libs.DateValidator)
+	Validate.RegisterValidation("password", libs.PasswordValidator)
 }

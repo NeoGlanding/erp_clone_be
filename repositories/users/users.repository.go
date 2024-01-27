@@ -15,3 +15,10 @@ func CheckIsOnboarded(userId string) (models.UserDetails, bool) {
 	db := db.PSQL.Table("user_details").Where("user_id = ?", userId).Find(&bind)
 	return bind, db.RowsAffected > 0
 }
+
+func CheckIsExistByEmailAndPhone(email string, phone string) (models.UserDetails, bool) {
+	var bind models.UserDetails
+	db := db.PSQL.Table("users").Where("email = ? OR phone = ?", email, phone).Find(&bind)
+
+	return bind, db.RowsAffected > 0
+}
