@@ -27,6 +27,9 @@ func TokenAuthenticationMiddleware(c *gin.Context) {
 		
 		c.Set("user", claims)
 		
+	} else {
+		c.JSON(http.StatusUnauthorized, map[string]interface{}{"message": "Unauthorized"})
+		c.Abort()
 	}
 
 }

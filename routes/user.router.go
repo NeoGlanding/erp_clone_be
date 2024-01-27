@@ -9,5 +9,5 @@ import (
 func Users(r *gin.Engine) {
 	users := r.Group("/users")
 
-	users.POST("/onboard", middlewares.TokenAuthenticationMiddleware,controllers.OnboardUser,middlewares.ResponseMiddlewares)
+	users.POST("/onboard", middlewares.TokenAuthenticationMiddleware, middlewares.BodyCountryIdExistMiddleware, controllers.OnboardUser,middlewares.ResponseMiddlewares)
 }

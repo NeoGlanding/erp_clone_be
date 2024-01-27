@@ -9,23 +9,24 @@ import (
 
 
 type UserDetails struct {
-	Id					string 		`gorm:"primaryKey"`
+	Id					string 		`json:"id" gorm:"primaryKey"`
 	UserId				string		`gorm:"unique"`
-	User				User			
-	FirstName			string
-	Surname				*string
-	AddressLine1		string
-	AddressLine2		string
-	AddressLine3		string
-	PostalCode			string
-	CountryId			string
-	Country				Country
-	DateOfBirth			time.Time
+	User				User		`json:"credentials"`	
+	FirstName			string		`json:"first_name"`
+	Surname				string		`json:"surname"`
+	AddressLine1		string		`json:"address_line_1"`
+	AddressLine2		string		`json:"address_line_2"`
+	AddressLine3		string		`json:"address_line_3"`
+	PostalCode			string		`json:"postal_code"`
+	CountryId			string		`json:"country_id"`
+	Country				Country		`json:"country"`
+	IdentityNumber		string		`json:"identity_number"`
+	DateOfBirth			time.Time	`json:"date_of_birth"`
 
 
-	CreatedAt	time.Time
-	UpdatedAt	*time.Time
-	DeletedAt	gorm.DeletedAt
+	CreatedAt	time.Time			`json:"created_at" gorm:"<-:create"`
+	UpdatedAt	*time.Time			`json:"updated_at"`
+	DeletedAt	gorm.DeletedAt		`json:"-"`
 }
 
 func (u *UserDetails) BeforeCreate(tx *gorm.DB) (err error) {

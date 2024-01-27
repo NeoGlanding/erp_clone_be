@@ -9,14 +9,15 @@ import (
 
 
 type User struct {
-	Id			string 		`gorm:"primaryKey"`
-	Email		string		`gorm:"unique"`
-	Password	string
-	Phone		*string		`gorm:"unique"`
-	Party		[]Party		`gorm:"many2many:user_party_permissions"`
-	CreatedAt	time.Time
-	UpdatedAt	*time.Time
-	DeletedAt	*time.Time
+	Id			string 		`json:"id" gorm:"primaryKey"`
+	Email		string		`json:"email" gorm:"unique"`
+	Password	string		`json:"-"`
+	Phone		*string		`json:"phone" gorm:"unique"`
+	Party		[]Party		`json:"-" gorm:"many2many:user_party_permissions"`
+	
+	CreatedAt	time.Time	`json:"-" gorm:"<-:create"`
+	UpdatedAt	*time.Time	`json:"-"`
+	DeletedAt	*time.Time	`json:"-"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
