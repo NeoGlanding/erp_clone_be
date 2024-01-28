@@ -2,3 +2,6 @@
 
 # app
 bin/*
+
+# Authentication
+authentication/firebase.key.json
