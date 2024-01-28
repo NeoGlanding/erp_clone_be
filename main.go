@@ -50,6 +50,7 @@ func main() {
 	routes.Party(r)
 	routes.Country(r)
 	routes.Users(r)
+	routes.Files(r)
 
 	r.Run()
 
