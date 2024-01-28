@@ -25,9 +25,15 @@ func init() {
 
 	initializers.Validator()
 
+	
 	config.AppConfig.JWT_SECRET = os.Getenv("JWT_SECRET")
 	config.AppConfig.JWT_TOKEN_VERSION = os.Getenv("JWT_TOKEN_VERSION")
 	config.AppConfig.JWT_TIME_EXPIRATION = os.Getenv("JWT_TOKEN_EXPIRATION_MINUTE")
+	
+	// Firebase
+	config.FirebaseConfig.ProjectID = os.Getenv("FIREBASE_PROJECT_ID")
+	config.FirebaseConfig.BucketURL = os.Getenv("FIREBASE_BUCKET_URL")
+	initializers.FirebaseInit()
 
 }
 
