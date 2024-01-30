@@ -32,8 +32,11 @@ func init() {
 	
 	// Firebase
 	config.FirebaseConfig.ProjectID = os.Getenv("FIREBASE_PROJECT_ID")
+	config.FirebaseConfig.ProjectKeyId = os.Getenv("FIREBASE_PROJECT_KEY_ID")
 	config.FirebaseConfig.BucketURL = os.Getenv("FIREBASE_BUCKET_URL")
+	config.FirebaseConfig.PrivateKey = os.Getenv("FIREBASE_PROJECT_PRIVATE_KEY")
 	initializers.FirebaseInit()
+
 
 }
 

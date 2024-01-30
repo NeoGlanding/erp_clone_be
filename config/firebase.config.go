@@ -1,11 +1,14 @@
 package config
 
 type firebaseConfigType struct {
-	ProjectID	string
-	BucketURL	string
+	ProjectID		string
+	ProjectKeyId	string
+	BucketURL		string
+	PrivateKey		string
 }
 
 var FirebaseConfig firebaseConfigType = firebaseConfigType{
 	ProjectID: "",
 	BucketURL: "",
+	PrivateKey: "",
 }
