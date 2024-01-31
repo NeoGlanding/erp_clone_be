@@ -6,8 +6,10 @@ import (
 	"io"
 	"os"
 
+	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/libs"
+	"github.com/automa8e_clone/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
@@ -48,5 +50,12 @@ func PostFile(c *gin.Context) {
 
 	os.Remove(fileSavedLocation)
 
-	c.Set("data", user)
+	data := models.File{
+		Filename: id.String(),
+		UserId: user["sub"].(string),
+	}
+
+	db.PSQL.Create(&data)
+
+	c.Set("data", data)
 }
