@@ -59,3 +59,16 @@ func PostFile(c *gin.Context) {
 
 	c.Set("data", data)
 }
+
+func GetFile(c *gin.Context) {
+	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
+	fileId := c.Param("id")
+
+	userId := user["sub"];
+
+	var data models.File;
+
+	db.PSQL.Table("files").Where("user_id = ? AND id = ?", userId, fileId).Find(&data)
+
+	c.Set("data", data)
+}

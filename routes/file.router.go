@@ -9,6 +9,7 @@ import (
 func Files(r *gin.Engine) {
 	files := r.Group("/files")
 
+	files.GET("/:id", middlewares.TokenAuthenticationMiddleware, controllers.GetFile, middlewares.ResponseMiddlewares)
 	files.POST("/", middlewares.TokenAuthenticationMiddleware, controllers.PostFile,middlewares.ResponseMiddlewares)
 
 }

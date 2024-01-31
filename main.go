@@ -45,6 +45,8 @@ func main() {
 
 	r := gin.Default()
 
+	r.MaxMultipartMemory = 5 << 20;
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "storm"})
 	})
