@@ -16,7 +16,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.Country{})
 	PSQL.AutoMigrate(&models.Party{})
 	PSQL.AutoMigrate(&models.UserPartyPermission{})
-	// 
+	PSQL.AutoMigrate(&models.File{})
 }
 
 func PSQLSeed() {

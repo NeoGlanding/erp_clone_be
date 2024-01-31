@@ -32,8 +32,11 @@ func init() {
 	
 	// Firebase
 	config.FirebaseConfig.ProjectID = os.Getenv("FIREBASE_PROJECT_ID")
+	config.FirebaseConfig.ProjectKeyId = os.Getenv("FIREBASE_PROJECT_KEY_ID")
 	config.FirebaseConfig.BucketURL = os.Getenv("FIREBASE_BUCKET_URL")
+	config.FirebaseConfig.PrivateKey = os.Getenv("FIREBASE_PROJECT_PRIVATE_KEY")
 	initializers.FirebaseInit()
+
 
 }
 
@@ -41,6 +44,8 @@ func main() {
 	db.PSQLMigrate()
 
 	r := gin.Default()
+
+	r.MaxMultipartMemory = 5 << 20;
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "storm"})
@@ -50,6 +55,7 @@ func main() {
 	routes.Party(r)
 	routes.Country(r)
 	routes.Users(r)
+	routes.Files(r)
 
 	r.Run()
 
