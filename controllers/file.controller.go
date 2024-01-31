@@ -22,8 +22,7 @@ func PostFile(c *gin.Context) {
 	id := uuid.New()
 
 	fileSavedLocation := fmt.Sprintf("temp/%s", file.Filename) 
-	
-	
+
 	c.SaveUploadedFile(file, fileSavedLocation)
 
 	
