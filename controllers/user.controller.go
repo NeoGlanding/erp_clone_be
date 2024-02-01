@@ -67,8 +67,10 @@ func OnboardUser(c *gin.Context) {
 
 
 	res := db.PSQL.Table("user_details").Create(&value)
-	fmt.Println("error -> ",res.Error.Error())
-	db.PSQL.Table("user_details").Where("user_id = ?", value.UserId).Find(&userDetails)
+	if (res.Error != nil) {
+		fmt.Print("error while create -> ", res.Error.Error())
+	}
+	db.PSQL.Table("user_details").Preload("Country").Where("user_id = ?", value.UserId).Find(&userDetails)
 
 	c.Set("data", userDetails)
 	

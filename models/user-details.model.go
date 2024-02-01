@@ -11,7 +11,7 @@ import (
 type UserDetails struct {
 	Id								string 		`json:"id" gorm:"primaryKey"`
 	UserId							string		`gorm:"unique"`
-	User							User		`json:"credentials"`	
+	User							User		`json:"-"`	
 	FirstName						string		`json:"first_name"`
 	Surname							string		`json:"surname"`
 	AddressLine1					string		`json:"address_line_1"`
@@ -23,7 +23,7 @@ type UserDetails struct {
 	IdentityNumber					string		`json:"identity_number"`
 	DateOfBirth						time.Time	`json:"date_of_birth"`
 	ProfilePictureFileId			*string		`json:"-"`
-	ProfilePictureFile				File		`json:"profile_picture"`
+	ProfilePictureFile				File		`json:"-"`
 
 
 	CreatedAt	time.Time			`json:"created_at" gorm:"<-:create"`
