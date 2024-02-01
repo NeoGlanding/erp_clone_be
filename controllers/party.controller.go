@@ -57,6 +57,7 @@ type BodyPostParty struct {
 	AddressLine3 string `json:"address_line_3"`
 	PostalCode   string `json:"postal_code"`
 	CountryId    string `json:"country_id"`
+	FileId		 *string`json:"file_id,omitempty" validate:"omitempty,uuid"`
 }
 
 type BodyPostAction struct {
@@ -124,7 +125,7 @@ func PostParty(c *gin.Context) {
 	user := x.(jwt.MapClaims)
 
 	var body BodyPostParty
-	c.BindJSON(&body)
+	c.ShouldBindBodyWith(&body, binding.JSON)
 
 	err := initializers.Validate.Struct(body)
 
@@ -142,9 +143,14 @@ func PostParty(c *gin.Context) {
 		AddressLine3: &body.AddressLine3,
 		PostalCode:   body.PostalCode,
 		CountryId:    body.CountryId,
+		FileId: body.FileId,
 	}
 
+	var partyReturn models.Party
+
+
 	resultParty := db.PSQL.Clauses(clause.Returning{}).Preload("Country").Create(&party)
+	db.PSQL.Preload("Country").Preload("File").Where("id = ?", party.ID).Find(&partyReturn)
 
 	permission := models.UserPartyPermission{
 		UserId:     user["sub"].(string),
@@ -167,7 +173,7 @@ func PostParty(c *gin.Context) {
 		fmt.Println(resultPermission.Error.Error())
 	}
 
-	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": party})
+	c.Set("data", map[string]interface{}{"message": "Successfuly create party", "data": partyReturn})
 
 }
 
@@ -190,7 +196,7 @@ func UpdateParty(c *gin.Context) {
 		return
 	}
 
-	c.BindJSON(&body)
+	c.ShouldBindBodyWith(&body, binding.JSON)
 
 	err := initializers.Validate.Struct(body)
 
@@ -213,11 +219,12 @@ func UpdateParty(c *gin.Context) {
 		AddressLine3: &body.AddressLine3,
 		PostalCode: body.PostalCode,
 		CountryId: body.CountryId,
+		FileId: body.FileId,
 	}
 
 	db.PSQL.Model(&models.Party{}).Where("id = ?", id).Save(&args)
 
-	db.PSQL.Preload("Country").Where("id = ?", id).Find(&data)
+	db.PSQL.Preload("Country").Preload("File").Where("id = ?", id).Find(&data)
 
 	c.Set("data", map[string]interface{}{"message": "Success", "data": data})
 }
@@ -238,7 +245,7 @@ func GetParty(c *gin.Context) {
 
 	var party models.Party;
 
-	db.PSQL.Preload("Country").Where("id = ?", id).Find(&party)
+	db.PSQL.Preload("File").Preload("Country").Where("id = ?", id).Find(&party)
 
 	c.Set("data", party)
 }

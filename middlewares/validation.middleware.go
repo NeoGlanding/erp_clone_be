@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/automa8e_clone/helpers"
@@ -38,6 +39,8 @@ func BodyCountryIdExistMiddleware(c *gin.Context) {
 	var body BodyCountryId
 	c.ShouldBindBodyWith(&body, binding.JSON)
 	_,exist := countries.FindById(body.CountryId)
+
+	fmt.Println("data", exist)
 
 
 	if !exist {
