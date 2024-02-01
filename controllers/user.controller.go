@@ -15,15 +15,16 @@ import (
 )
 
 type PostOnboardingBody struct {
-	FirstName		string		`json:"first_name" validate:"required,max=100"`
-	Surname			string		`json:"surname" validate:"required,max=100"`
-	AddressLine1	string		`json:"address_line_1" validate:"required,max=100"`
-	AddressLine2	*string		`json:"address_line_2" validate:"omitempty,max=100"`
-	AddressLine3	*string		`json:"address_line_3" validate:"omitempty,max=100"`
-	PostalCode		string		`json:"postal_code" validate:"required,max=100"`
-	CountryId		string		`json:"country_id" validate:"required"`
-	IdentityNumber	string		`json:"identity_number" validate:"required"`
-	DateOfBirth		string		`json:"date_of_birth" validate:"required,datestring"`
+	FirstName				string		`json:"first_name" validate:"required,max=100"`
+	Surname					string		`json:"surname" validate:"required,max=100"`
+	AddressLine1			string		`json:"address_line_1" validate:"required,max=100"`
+	AddressLine2			*string		`json:"address_line_2" validate:"omitempty,max=100"`
+	AddressLine3			*string		`json:"address_line_3" validate:"omitempty,max=100"`
+	PostalCode				string		`json:"postal_code" validate:"required,max=100"`
+	CountryId				string		`json:"country_id" validate:"required"`
+	IdentityNumber			string		`json:"identity_number" validate:"required"`
+	DateOfBirth				string		`json:"date_of_birth" validate:"required,datestring"`
+	ProfilePictureFileId	*string		`json:"profile_picture_file_id" validate:"omitempty"`
 }
 
 type PutUpdateCredentials struct {
@@ -61,12 +62,15 @@ func OnboardUser(c *gin.Context) {
 		CountryId: body.CountryId,
 		IdentityNumber: body.IdentityNumber,
 		DateOfBirth: date,
+		ProfilePictureFileId: body.ProfilePictureFileId,
 	}
 
-	fmt.Println(value.UserId)
 
-	db.PSQL.Table("user_details").Create(&value)
-	db.PSQL.Table("user_details").Preload("Country").Preload("User").Where("user_id = ?", value.UserId).Find(&userDetails)
+	res := db.PSQL.Table("user_details").Create(&value)
+	if (res.Error != nil) {
+		fmt.Print("error while create -> ", res.Error.Error())
+	}
+	db.PSQL.Table("user_details").Preload("Country").Where("user_id = ?", value.UserId).Find(&userDetails)
 
 	c.Set("data", userDetails)
 	
@@ -86,8 +90,6 @@ func UpdateCredential(c *gin.Context) {
 		helpers.SetValidationError(c, &err)
 		return
 	}
-
-	// _, exist := users_repository.CheckIsExistByEmailOrPhone(body.Email, body.PhoneNumber);
 
 	byEmailData, existByEmail := users_repository.CheckIsExistByEmail(body.Email)
 	byPhoneData, existByPhoneData := users_repository.CheckIsExistByPhone(body.PhoneNumber)

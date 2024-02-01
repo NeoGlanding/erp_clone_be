@@ -37,3 +37,8 @@ func SetConflictError(c *gin.Context, message string) {
 	c.Set("error", message)
 	c.Set("error-code", http.StatusConflict)
 }
+
+func ThrowError(c *gin.Context, statusCode int, message string) {
+	c.JSON(statusCode,gin.H{"message": message, "status": statusCode})
+	c.Abort()
+}

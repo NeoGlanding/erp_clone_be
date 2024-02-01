@@ -18,6 +18,8 @@ type Party struct {
 	CountryId		string		`json:"country_id"`
 	Country			Country		`json:"country"`
 	Users			[]User		`json:"users" gorm:"many2many:user_party_permissions"`
+	FileId			*string		`json:"file_id"`
+	File			File		`json:"file"`
 
 	CreatedAt		time.Time	`json:"created_at" gorm:"<-:create"`
 	UpdatedAt		*time.Time	`json:"updated_at"`

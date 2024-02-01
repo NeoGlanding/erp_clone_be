@@ -66,6 +66,7 @@ func UnonboardedAuthorization(c *gin.Context) {
 	_, isOnboarded := users_repository.CheckIsOnboarded(userId);
 
 
+
 	if !isOnboarded {
 		c.Next()
 	} else {

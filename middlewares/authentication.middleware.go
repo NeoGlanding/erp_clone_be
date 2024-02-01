@@ -41,6 +41,7 @@ func TokenAuthenticationMiddleware(c *gin.Context) {
 			}
 		}
 
+
 		
 		c.Set("user", claims)
 		
