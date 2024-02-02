@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  erp-be:
+    container_name: erp-be-development
+    build: .
+    ports:
+      - "4002:4000"
+    env_file:
+      - ./.env.dev
+  db:
+    container_name: automa8e_postgres
+    image: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ~/docker/psqlerp:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_USER=automa8e
+      - POSTGRES_DB=automa8e_development

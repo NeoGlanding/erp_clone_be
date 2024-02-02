@@ -1,4 +1,14 @@
+# Local Environment
 .env
+
+# Development Environment
+.env.dev 
+
+# UAT Environment
+.env.uat
+
+# Production Environment
+.env.prd
 
 # app
 bin/*
