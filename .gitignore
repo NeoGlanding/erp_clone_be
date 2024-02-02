@@ -15,3 +15,6 @@ bin/*
 
 # Authentication
 authentication/firebase.key.json
+authentication/firebase.key.dev.json
+authentication/firebase.key.uat.json
+authentication/firebase.key.prd.json
