@@ -7,6 +7,20 @@ services:
       - "4002:4000"
     env_file:
       - ./.env.dev
+  erp-be-uat:
+    container_name: erp-be-uat
+    build: .
+    ports:
+      - "4003:4000"
+    env_file:
+      - ./.env.uat
+  erp-be-prd:
+    container_name: erp-be-production
+    build: .
+    ports:
+      - "4001:4000"
+    env_file:
+      - ./.env.prd
   db:
     container_name: automa8e_postgres
     image: postgres
