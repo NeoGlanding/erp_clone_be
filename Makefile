@@ -1,4 +1,4 @@
-.PHONY: run-srv run-db stop-db deploy-dev
+.PHONY: run-srv run-db stop-db deploy-dev clear
 
 run-srv: 
 	CompileDaemon -build "go build -o bin/automa8e_clone" -command "./bin/automa8e_clone"
@@ -10,4 +10,7 @@ stop-db:
 	docker-compose stop db; docker-compose rm -f db;
 
 deploy-dev:
-	docker-compose up erp-be -d;
+	docker-compose up erp-be -d --build;
+
+clear:
+	docker-compose down;
