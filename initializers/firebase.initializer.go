@@ -11,10 +11,23 @@ import (
 	"google.golang.org/api/option"
 )
 
+func filename() string {
+	env := config.AppConfig.ENV
 
+	if env == "local" {
+		return "authentication/firebase.key.json"
+	} else if env == "dev" {
+		return "authentication/firebase.key.dev.json" 
+	} else if env == "uat" {
+		return "authentication/firebase.key.uat.json"
+	} else if env == "prd" {
+		return "authentication/firebase.key.prd.json"
+	}
+	return ""
+}
 
 func FirebaseInit() {
-	opt := option.WithCredentialsFile("authentication/firebase.key.json")
+	opt := option.WithCredentialsFile(filename())
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("error initializing firebase app: %v\n", err)
