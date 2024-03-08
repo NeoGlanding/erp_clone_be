@@ -17,6 +17,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.Party{})
 	PSQL.AutoMigrate(&models.UserPartyPermission{})
 	PSQL.AutoMigrate(&models.File{})
+	PSQL.AutoMigrate(&models.CustomerType{})
 }
 
 func PSQLSeed() {
@@ -29,5 +30,15 @@ func PSQLSeed() {
 		fmt.Println(err)
 	}
 
+	// Customer Types
+	customerTypesSeeder := models.NewCustomerTypeSeeder(gorm_seeder.SeederConfiguration{Rows: 14})
+	ctStack := gorm_seeder.NewSeedersStack(PSQL)
+	ctStack.AddSeeder(&customerTypesSeeder)
+
+	ctStackErr := ctStack.Seed()
+
+	if ctStackErr != nil {
+		fmt.Println("No error")
+	}
 
 }
