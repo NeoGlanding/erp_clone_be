@@ -134,7 +134,7 @@ func (s *CustomerTypeSeeder) Seed(db *gorm.DB) error {
 	
 }
 
-func (c *CustomerTypeSeeder) Clear(db *gorm.DB) error {
+func (c *CustomerPartnershipSeeder) Clear(db *gorm.DB) error {
     entity := CustomerType{}
     return c.SeederAbstract.Delete(db, entity.TableName())
 }
