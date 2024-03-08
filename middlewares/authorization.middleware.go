@@ -45,6 +45,8 @@ func PartyAuthorizationRole(authorizedRole []string) (func (c *gin.Context)) {
 func OnboardedAuthorization(c *gin.Context) {
 	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
 
+	fmt.Println("ctx", userCtx)
+
 	userId := user["sub"].(string)
 
 	data, isOnboarded := users_repository.CheckIsOnboarded(userId);

@@ -57,6 +57,7 @@ func main() {
 	routes.Country(r)
 	routes.Users(r)
 	routes.Files(r)
+	routes.Customer(r)
 
 	r.Run()
 
