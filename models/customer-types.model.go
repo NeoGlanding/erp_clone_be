@@ -13,6 +13,8 @@ type CustomerType struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
+	Customer []Customer `gorm:"foreignKey:CustomerTypeId" json:"customer"`
+
 	CreatedAt time.Time	`json:"created_at"`
 	UpdatedAt	*time.Time	`json:"updated_at"`
 	DeletedAt	gorm.DeletedAt	`json:"-"`

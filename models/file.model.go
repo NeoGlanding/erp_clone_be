@@ -16,6 +16,8 @@ type File struct {
 	User				User		`json:"-"`
 	FileUrl				string		`json:"url"`
 
+	Customer 			[]Customer	`json:"customer" gorm:"foreignKey:FileId"`
+
 	CreatedAt	time.Time			`json:"created_at" gorm:"<-:create"`
 	UpdatedAt	*time.Time			`json:"updated_at"`
 	DeletedAt	gorm.DeletedAt		`json:"-"`

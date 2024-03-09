@@ -19,6 +19,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.File{})
 	PSQL.AutoMigrate(&models.CustomerType{})
 	PSQL.AutoMigrate(&models.CustomerPartnership{})
+	PSQL.AutoMigrate(&models.Customer{})
 }
 
 func PSQLSeed() {

@@ -14,12 +14,14 @@ type CustomerPartnership struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 
+	Customer []Customer `gorm:"foreignKey:CustomerPartnershipId" json:"customer"`
+
 	CreatedAt 	time.Time	`json:"created_at"`
 	UpdatedAt	*time.Time	`json:"updated_at"`
 	DeletedAt	gorm.DeletedAt	`json:"-"`
 }
 
-func (c *CustomerPartnership) BeforeCreate() (error) {
+func (c *CustomerPartnership) BeforeCreate(tx *gorm.DB) (error) {
 	if c.ID == "" {
 		c.ID = uuid.New().String()
 	}
