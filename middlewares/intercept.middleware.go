@@ -13,6 +13,10 @@ type EmailBody struct {
 	Email	string	`json:"email"`
 }
 
+type CountryIdBody struct {
+	CountryId	string	`json:"country_id"`
+}
+
 
 func InterceptParam(param string, properties string) (func (c *gin.Context)) {
 	return func (c *gin.Context) {
@@ -41,4 +45,10 @@ func InterceptFileIdBody(field string) (func (c *gin.Context)) {
 
 		c.Set("file-id", body[field])
 	}
+}
+
+func InterceptCountryIdFromBody (c *gin.Context) {
+	var body CountryIdBody
+	c.ShouldBindBodyWith(&body, binding.JSON)
+	c.Set("country-id", body.CountryId)
 }

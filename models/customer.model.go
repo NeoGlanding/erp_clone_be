@@ -19,6 +19,8 @@ type Customer struct {
 	CountryId string `json:"country_id"`
 	PartyId string `json:"party_id"`
 
+	FileId string `json:"file_id"`
+
 	CreatedByUserId string `json:"created_by_user_id"`
 
 	CreatedAt 	time.Time	`json:"created_at"`
