@@ -17,4 +17,10 @@ func Customer(c *gin.Engine) {
 		middlewares.BodyCountryIdExistMiddleware, middlewares.InterceptFileIdBody("file_id"), middlewares.FileIdExist,
 		middlewares.InterceptPartyIdFromBody, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
 		controllers.CreateCustomer, middlewares.ResponseMiddlewares)
+
+	customer.PUT("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization,
+		middlewares.CustomerTypeIdExistBody, middlewares.CustomerPartnershipIdExistBody, middlewares.BodyCountryIdExistMiddleware,
+		middlewares.InterceptFileIdBody("file_id"), middlewares.FileIdExist, middlewares.InterceptPartyIdFromQueryRequired,
+		middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
+		controllers.UpdateCustomer, middlewares.ResponseMiddlewares)
 }
