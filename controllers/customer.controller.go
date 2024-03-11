@@ -119,6 +119,7 @@ func UpdateCustomer(c *gin.Context) {
 	data.FileId = body.FileId
 
 	db.PSQL.Clauses(clause.Locking{Strength: "UPDATE"}).Save(&data)
+	db.PSQL.Preload("CustomerType").Preload("CustomerPartnership").Preload("Country").Preload("Party").Preload("Party.Country").Preload("Party.File").Preload("File").Find(&data)
 
 	c.Set("data", data)
 }
