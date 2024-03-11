@@ -83,6 +83,7 @@ func CreateCustomer(c *gin.Context) {
 	}
 
 	db.PSQL.Clauses(clause.Returning{}).Create(&data)
+	db.PSQL.Preload("CustomerType").Preload("CustomerPartnership").Preload("Country").Preload("Party").Preload("Party.Country").Preload("Party.File").Preload("File").Find(&data)
 
 	c.Set("data", data)
 }
