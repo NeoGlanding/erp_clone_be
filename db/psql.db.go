@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var PSQL *gorm.DB;
+var PSQL *gorm.DB
 
 func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.User{})
@@ -20,6 +20,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.CustomerType{})
 	PSQL.AutoMigrate(&models.CustomerPartnership{})
 	PSQL.AutoMigrate(&models.Customer{})
+	PSQL.AutoMigrate(&models.CustomerAddresses{})
 }
 
 func PSQLSeed() {
@@ -28,7 +29,7 @@ func PSQLSeed() {
 	seedersStack := gorm_seeder.NewSeedersStack(PSQL)
 	seedersStack.AddSeeder(&countrySeeder)
 	err := seedersStack.Seed()
-	if (err != nil) {
+	if err != nil {
 		fmt.Println(err)
 	}
 
@@ -53,6 +54,5 @@ func PSQLSeed() {
 	if cpStackErr != nil {
 		fmt.Println("No error")
 	}
-
 
 }

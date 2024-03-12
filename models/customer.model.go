@@ -27,6 +27,8 @@ type Customer struct {
 	Party               Party               `json:"party"`
 	File                File                `json:"file"`
 
+	Addresses []CustomerAddresses `json:"addresses" gorm:"foreignKey:CustomerId"`
+
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt *time.Time     `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-"`

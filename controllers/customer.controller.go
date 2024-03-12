@@ -124,3 +124,18 @@ func UpdateCustomer(c *gin.Context) {
 
 	c.Set("data", data)
 }
+
+func CreateCustomerAddress(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	data, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	c.Set("data", data)
+
+}

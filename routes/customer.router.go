@@ -23,4 +23,8 @@ func Customer(c *gin.Engine) {
 		middlewares.InterceptFileIdBody("file_id"), middlewares.FileIdExist, middlewares.InterceptPartyIdFromQueryRequired,
 		middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
 		controllers.UpdateCustomer, middlewares.ResponseMiddlewares)
+
+	customer.POST("/:id/addresses", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization,
+		middlewares.InterceptPartyIdFromQueryRequired, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
+		controllers.CreateCustomerAddress, middlewares.ResponseMiddlewares)
 }
