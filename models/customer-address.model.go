@@ -12,7 +12,7 @@ type CustomerAddresses struct {
 
 	AddressLine1 string  `json:"address_line1"`
 	AddressLine2 string  `json:"address_line2"`
-	AddressLine3 string  `json:"address_line3"`
+	AddressLine3 *string `json:"address_line3"`
 	PostalCode   string  `json:"postal_code"`
 	Country      Country `json:"country"`
 
