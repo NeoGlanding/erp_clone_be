@@ -27,4 +27,8 @@ func Customer(c *gin.Engine) {
 	customer.POST("/:id/addresses", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization,
 		middlewares.InterceptPartyIdFromQueryRequired, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
 		controllers.CreateCustomerAddress, middlewares.ResponseMiddlewares)
+
+	customer.POST("/:id/contacts", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization,
+		middlewares.InterceptPartyIdFromQueryRequired, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
+		controllers.CreateContacts, middlewares.ResponseMiddlewares)
 }

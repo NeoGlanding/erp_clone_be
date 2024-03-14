@@ -48,8 +48,18 @@ type CustomerAddressesBody struct {
 	CountryId    string `json:"country_id" validate:"required,uuid"`
 }
 
+type CustomerContactsBody struct {
+	Name        string `json:"name" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phone_number" validate:"required,e164"`
+}
+
 type CustomerAddressesBodyPayload struct {
 	Addresses []CustomerAddressesBody `json:"addresses" validate:"required"`
+}
+
+type CustomerContactsBodyPayload struct {
+	Contacts []CustomerContactsBody `json:"contacts" validate:"required,dive,required"`
 }
 
 func GetCustomerType(c *gin.Context) {
@@ -189,4 +199,47 @@ func CreateCustomerAddress(c *gin.Context) {
 
 	c.Set("data", body.Addresses)
 
+}
+
+func CreateContacts(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	var body CustomerContactsBodyPayload
+
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	_, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	err := initializers.Validate.Struct(body)
+
+	if err != nil {
+		helpers.SetValidationError(c, &err)
+		c.Next()
+		return
+	}
+
+	db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		for _, contact := range body.Contacts {
+
+			var data models.CustomerContact = models.CustomerContact{
+				Email:       contact.Email,
+				Name:        contact.Name,
+				PhoneNumber: contact.PhoneNumber,
+				CustomerId:  customerId,
+			}
+
+			tx.Create(&data)
+		}
+
+		return nil
+	})
+
+	c.Set("data", body)
 }

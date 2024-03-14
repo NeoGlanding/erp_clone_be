@@ -28,6 +28,7 @@ type Customer struct {
 	File                File                `json:"file"`
 
 	Addresses []CustomerAddresses `json:"addresses" gorm:"foreignKey:CustomerId"`
+	Contacts  []CustomerContact   `json:"contacts" gorm:"foreignKey:CustomerId"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt *time.Time     `json:"updated_at"`
