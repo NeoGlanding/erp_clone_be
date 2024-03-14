@@ -16,6 +16,8 @@ type Country struct {
 	CreatedAt		time.Time	`json:"created_at"`
 	UpdatedAt		*time.Time	`json:"updated_at"`
 	DeletedAt		*time.Time	
+
+	Customer		[]Customer	`json:"customer" gorm:"foreignKey:CountryId"`
 }
 
 func (c *Country) TableName() string {

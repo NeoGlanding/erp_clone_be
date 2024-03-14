@@ -21,6 +21,8 @@ type Party struct {
 	FileId			*string		`json:"file_id"`
 	File			File		`json:"file"`
 
+	Customer		[]Customer	`json:"customer" gorm:"foreignKey:PartyId"`
+
 	CreatedAt		time.Time	`json:"created_at" gorm:"<-:create"`
 	UpdatedAt		*time.Time	`json:"updated_at"`
 	DeletedAt		*time.Time	`json:"-"`

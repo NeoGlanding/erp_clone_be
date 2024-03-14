@@ -39,6 +39,16 @@ func SetConflictError(c *gin.Context, message string) {
 }
 
 func ThrowError(c *gin.Context, statusCode int, message string) {
-	c.JSON(statusCode,gin.H{"message": message, "status": statusCode})
+	c.JSON(statusCode, gin.H{"message": message, "status": statusCode})
+	c.Abort()
+}
+
+func ThrowBadRequestError(c *gin.Context, message string) {
+	c.SecureJSON(http.StatusBadRequest, gin.H{"message": message, "status": http.StatusBadRequest})
+	c.Abort()
+}
+
+func ThrowNotFoundError(c *gin.Context, message string) {
+	c.SecureJSON(http.StatusNotFound, gin.H{"message": message, "status": http.StatusNotFound})
 	c.Abort()
 }

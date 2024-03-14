@@ -15,6 +15,8 @@ type User struct {
 	Phone					*string		`json:"phone" gorm:"unique"`
 	Party					[]Party		`json:"-" gorm:"many2many:user_party_permissions"`
 	InformationChanged		int			`gorm:"default:0"`
+
+	Customer				[]Customer	`json:"-" gorm:"foreignKey:CreatedByUserId"`
 	
 	CreatedAt	time.Time	`json:"-" gorm:"<-:create"`
 	UpdatedAt	*time.Time	`json:"-"`

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var PSQL *gorm.DB;
+var PSQL *gorm.DB
 
 func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.User{})
@@ -17,6 +17,11 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.Party{})
 	PSQL.AutoMigrate(&models.UserPartyPermission{})
 	PSQL.AutoMigrate(&models.File{})
+	PSQL.AutoMigrate(&models.CustomerType{})
+	PSQL.AutoMigrate(&models.CustomerPartnership{})
+	PSQL.AutoMigrate(&models.Customer{})
+	PSQL.AutoMigrate(&models.CustomerAddresses{})
+	PSQL.AutoMigrate(&models.CustomerContact{})
 }
 
 func PSQLSeed() {
@@ -25,9 +30,30 @@ func PSQLSeed() {
 	seedersStack := gorm_seeder.NewSeedersStack(PSQL)
 	seedersStack.AddSeeder(&countrySeeder)
 	err := seedersStack.Seed()
-	if (err != nil) {
+	if err != nil {
 		fmt.Println(err)
 	}
 
+	// Customer Types
+	customerTypesSeeder := models.NewCustomerTypeSeeder(gorm_seeder.SeederConfiguration{Rows: 14})
+	ctStack := gorm_seeder.NewSeedersStack(PSQL)
+	ctStack.AddSeeder(&customerTypesSeeder)
+
+	ctStackErr := ctStack.Seed()
+
+	if ctStackErr != nil {
+		fmt.Println("No error")
+	}
+
+	// Customer Partnership
+	customerPartnershipSeeder := models.NewCustomerPartnershipSeeder(gorm_seeder.SeederConfiguration{Rows: 3})
+	cpStack := gorm_seeder.NewSeedersStack(PSQL)
+	cpStack.AddSeeder(&customerPartnershipSeeder)
+
+	cpStackErr := cpStack.Seed()
+
+	if cpStackErr != nil {
+		fmt.Println("No error")
+	}
 
 }
