@@ -62,6 +62,30 @@ type CustomerContactsBodyPayload struct {
 	Contacts []CustomerContactsBody `json:"contacts" validate:"required,dive,required"`
 }
 
+type UpdateCustomerAddressesBody struct {
+	ID           string `json:"id" validate:"required,uuid"`
+	AddressLine1 string `json:"address_line1" validate:"required"`
+	AddressLine2 string `json:"address_line2" validate:"required"`
+	AddressLine3 string `json:"address_line3"`
+	PostalCode   string `json:"postal_code" validate:"required"`
+	CountryId    string `json:"country_id" validate:"required,uuid"`
+}
+
+type UpdateCustomerAddressesBodyPayload struct {
+	Addresses []UpdateCustomerAddressesBody `json:"addresses" validate:"required"`
+}
+
+type UpdateCustomerContactsBody struct {
+	ID          string `json:"id" validate:"required,uuid"`
+	Name        string `json:"name" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phone_number" validate:"required,e164"`
+}
+
+type UpdateCustomerContactBodyPayload struct {
+	Contacts []UpdateCustomerContactsBody `json:"contacts" validate:"required,dive,required"`
+}
+
 func GetCustomerType(c *gin.Context) {
 	data := []models.CustomerType{}
 	db.PSQL.Find(&data)
@@ -117,7 +141,12 @@ func UpdateCustomer(c *gin.Context) {
 	id := c.Param("id")
 	partyId := c.Query("party_id")
 
+	userCtx, _ := c.Get("user")
+	user := userCtx.(jwt.MapClaims)
+
 	data, exist := customer_repository.GetCustomerByIdAndPartyId(id, partyId)
+
+	var arg models.Customer
 
 	if !exist {
 		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", id))
@@ -135,16 +164,19 @@ func UpdateCustomer(c *gin.Context) {
 		return
 	}
 
-	data.Name = body.Name
-	data.BusinessRegistrationNumber = &body.BusinessRegistrationNumber
-	data.Url = &body.Url
-	data.Remarks = &body.Remarks
-	data.CustomerTypeId = body.CustomerTypeId
-	data.CustomerPartnershipId = body.CustomerPartnershipId
-	data.CountryId = body.CountryId
-	data.FileId = body.FileId
+	arg.ID = id
+	arg.Name = body.Name
+	arg.BusinessRegistrationNumber = &body.BusinessRegistrationNumber
+	arg.Url = &body.Url
+	arg.Remarks = &body.Remarks
+	arg.CustomerTypeId = body.CustomerTypeId
+	arg.CustomerPartnershipId = body.CustomerPartnershipId
+	arg.CountryId = body.CountryId
+	arg.FileId = body.FileId
+	arg.PartyId = partyId
+	arg.CreatedByUserId = user["sub"].(string)
 
-	db.PSQL.Clauses(clause.Locking{Strength: "UPDATE"}).Save(&data)
+	db.PSQL.Clauses(clause.Locking{Strength: "UPDATE"}).Save(&arg)
 	db.PSQL.Preload("CustomerType").Preload("CustomerPartnership").Preload("Country").Preload("Party").Preload("Party.Country").Preload("Party.File").Preload("File").Find(&data)
 
 	c.Set("data", data)
@@ -180,6 +212,7 @@ func CreateCustomerAddress(c *gin.Context) {
 
 			if !exist {
 				helpers.ThrowNotFoundError(c, fmt.Sprintf("Country with id %s not found (at index %d)", address.CountryId, index))
+				c.Abort()
 				return errors.New("country not found")
 			}
 
@@ -242,4 +275,133 @@ func CreateContacts(c *gin.Context) {
 	})
 
 	c.Set("data", body)
+}
+
+func UpdateCustomerAddresses(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	var body UpdateCustomerAddressesBodyPayload
+
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	_, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		for index, address := range body.Addresses {
+			err := initializers.Validate.Struct(address)
+
+			if err != nil {
+				c.JSON(400, gin.H{"error": err.Error() + " at index " + fmt.Sprint(index)})
+				c.Abort()
+				return errors.New("validation error")
+			}
+
+			_, addressExist := customer_repository.GetCustomerAddressById(address.ID, customerId)
+
+			if !addressExist {
+				helpers.ThrowNotFoundError(c, fmt.Sprintf("Address with id %s not found (at index %d)", address.ID, index))
+				c.Abort()
+				return errors.New("address not found")
+			}
+
+			_, exist := countries.FindById(address.CountryId)
+
+			if !exist {
+				helpers.ThrowNotFoundError(c, fmt.Sprintf("Country with id %s not found (at index %d)", address.CountryId, index))
+				c.Abort()
+				return errors.New("country not found")
+			}
+
+			var data models.CustomerAddresses = models.CustomerAddresses{
+				ID:           address.ID,
+				AddressLine1: address.AddressLine1,
+				AddressLine2: address.AddressLine2,
+				AddressLine3: &address.AddressLine3,
+				PostalCode:   address.PostalCode,
+				CountryId:    address.CountryId,
+				CustomerId:   customerId,
+			}
+
+			tx.Clauses(clause.Returning{}).Save(&data)
+		}
+		return nil
+	})
+
+	c.Set("data", body.Addresses)
+}
+
+func UpdateContacts(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	var body UpdateCustomerContactBodyPayload
+
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	_, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	err := initializers.Validate.Struct(body)
+
+	if err != nil {
+		helpers.SetValidationError(c, &err)
+		c.Next()
+		return
+	}
+
+	db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		for _, contact := range body.Contacts {
+
+			_, exist := customer_repository.GetCustomerContactById(contact.ID, customerId)
+
+			if !exist {
+				helpers.ThrowBadRequestError(c, fmt.Sprintf("Contact ID %s is not exist", contact.ID))
+			}
+
+			var data models.CustomerContact = models.CustomerContact{
+				ID:          contact.ID,
+				Email:       contact.Email,
+				Name:        contact.Name,
+				PhoneNumber: contact.PhoneNumber,
+				CustomerId:  customerId,
+			}
+
+			tx.Save(&data)
+		}
+
+		return nil
+	})
+
+	c.Set("data", body)
+}
+
+func GetCustomer(c *gin.Context) {
+	id := c.Param("id")
+	partyId := c.Query("party_id")
+
+	data, exist := customer_repository.GetCustomerByIdAndPartyId(id, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, "Customer not found")
+		return
+	}
+
+	c.Set("data", data)
+
+}
+
+func GetCustomers(c *gin.Context) {
+
 }
