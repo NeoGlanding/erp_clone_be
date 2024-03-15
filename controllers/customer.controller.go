@@ -75,6 +75,17 @@ type UpdateCustomerAddressesBodyPayload struct {
 	Addresses []UpdateCustomerAddressesBody `json:"addresses" validate:"required"`
 }
 
+type UpdateCustomerContactsBody struct {
+	ID          string `json:"id" validate:"required,uuid"`
+	Name        string `json:"name" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	PhoneNumber string `json:"phone_number" validate:"required,e164"`
+}
+
+type UpdateCustomerContactBodyPayload struct {
+	Contacts []UpdateCustomerContactsBody `json:"contacts" validate:"required,dive,required"`
+}
+
 func GetCustomerType(c *gin.Context) {
 	data := []models.CustomerType{}
 	db.PSQL.Find(&data)
@@ -316,4 +327,54 @@ func UpdateCustomerAddresses(c *gin.Context) {
 	})
 
 	c.Set("data", body.Addresses)
+}
+
+func UpdateContacts(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	var body UpdateCustomerContactBodyPayload
+
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	_, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	err := initializers.Validate.Struct(body)
+
+	if err != nil {
+		helpers.SetValidationError(c, &err)
+		c.Next()
+		return
+	}
+
+	db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		for _, contact := range body.Contacts {
+
+			_, exist := customer_repository.GetCustomerContactById(contact.ID, customerId)
+
+			if !exist {
+				helpers.ThrowBadRequestError(c, fmt.Sprintf("Contact ID %s is not exist", contact.ID))
+			}
+
+			var data models.CustomerContact = models.CustomerContact{
+				ID:          contact.ID,
+				Email:       contact.Email,
+				Name:        contact.Name,
+				PhoneNumber: contact.PhoneNumber,
+				CustomerId:  customerId,
+			}
+
+			tx.Save(&data)
+		}
+
+		return nil
+	})
+
+	c.Set("data", body)
 }

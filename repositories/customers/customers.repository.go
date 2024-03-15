@@ -30,3 +30,17 @@ func GetCustomerAddressById(customerAddressId string, customerId string) (models
 	return data, true
 
 }
+
+func GetCustomerContactById(customerContactId string, customerId string) (models.CustomerContact, bool) {
+
+	var data models.CustomerContact
+
+	result := db.PSQL.Table("customer_contacts").Where("id = ? AND customer_id = ?", customerContactId, customerId).Find(&data)
+
+	if result.RowsAffected == 0 {
+		return data, false
+	}
+
+	return data, true
+
+}
