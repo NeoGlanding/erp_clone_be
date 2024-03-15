@@ -141,7 +141,12 @@ func UpdateCustomer(c *gin.Context) {
 	id := c.Param("id")
 	partyId := c.Query("party_id")
 
+	userCtx, _ := c.Get("user")
+	user := userCtx.(jwt.MapClaims)
+
 	data, exist := customer_repository.GetCustomerByIdAndPartyId(id, partyId)
+
+	var arg models.Customer
 
 	if !exist {
 		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", id))
@@ -159,16 +164,19 @@ func UpdateCustomer(c *gin.Context) {
 		return
 	}
 
-	data.Name = body.Name
-	data.BusinessRegistrationNumber = &body.BusinessRegistrationNumber
-	data.Url = &body.Url
-	data.Remarks = &body.Remarks
-	data.CustomerTypeId = body.CustomerTypeId
-	data.CustomerPartnershipId = body.CustomerPartnershipId
-	data.CountryId = body.CountryId
-	data.FileId = body.FileId
+	arg.ID = id
+	arg.Name = body.Name
+	arg.BusinessRegistrationNumber = &body.BusinessRegistrationNumber
+	arg.Url = &body.Url
+	arg.Remarks = &body.Remarks
+	arg.CustomerTypeId = body.CustomerTypeId
+	arg.CustomerPartnershipId = body.CustomerPartnershipId
+	arg.CountryId = body.CountryId
+	arg.FileId = body.FileId
+	arg.PartyId = partyId
+	arg.CreatedByUserId = user["sub"].(string)
 
-	db.PSQL.Clauses(clause.Locking{Strength: "UPDATE"}).Save(&data)
+	db.PSQL.Clauses(clause.Locking{Strength: "UPDATE"}).Save(&arg)
 	db.PSQL.Preload("CustomerType").Preload("CustomerPartnership").Preload("Country").Preload("Party").Preload("Party.Country").Preload("Party.File").Preload("File").Find(&data)
 
 	c.Set("data", data)
@@ -377,4 +385,23 @@ func UpdateContacts(c *gin.Context) {
 	})
 
 	c.Set("data", body)
+}
+
+func GetCustomer(c *gin.Context) {
+	id := c.Param("id")
+	partyId := c.Query("party_id")
+
+	data, exist := customer_repository.GetCustomerByIdAndPartyId(id, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, "Customer not found")
+		return
+	}
+
+	c.Set("data", data)
+
+}
+
+func GetCustomers(c *gin.Context) {
+
 }

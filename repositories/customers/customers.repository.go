@@ -8,7 +8,17 @@ import (
 func GetCustomerByIdAndPartyId(id string, party_id string) (models.Customer, bool) {
 	var data models.Customer
 
-	result := db.PSQL.Table("customers").Where("id = ? AND party_id = ?", id, party_id).Find(&data)
+	result := db.PSQL.Table("customers").Where("id = ? AND party_id = ?", id, party_id).
+		Preload("Addresses").
+		Preload("Contacts").
+		Preload("Party").
+		Preload("CustomerType").
+		Preload("CustomerPartnership").
+		Preload("Party.File").
+		Preload("Party.Country").
+		Preload("File").
+		Preload("Country").
+		Find(&data)
 
 	if result.RowsAffected == 0 {
 		return data, false

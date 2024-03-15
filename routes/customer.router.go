@@ -39,4 +39,7 @@ func Customer(c *gin.Engine) {
 	customer.PUT("/:id/contacts", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization,
 		middlewares.InterceptPartyIdFromQueryRequired, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
 		controllers.UpdateContacts, middlewares.ResponseMiddlewares)
+
+	customer.GET("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, middlewares.InterceptPartyIdFromQueryRequired,
+		middlewares.PartyAuthorizationRole([]string{"admin", "owner", "viewer"}), controllers.GetCustomer, middlewares.ResponseMiddlewares)
 }
