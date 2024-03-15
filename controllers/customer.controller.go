@@ -62,6 +62,19 @@ type CustomerContactsBodyPayload struct {
 	Contacts []CustomerContactsBody `json:"contacts" validate:"required,dive,required"`
 }
 
+type UpdateCustomerAddressesBody struct {
+	ID           string `json:"id" validate:"required,uuid"`
+	AddressLine1 string `json:"address_line1" validate:"required"`
+	AddressLine2 string `json:"address_line2" validate:"required"`
+	AddressLine3 string `json:"address_line3"`
+	PostalCode   string `json:"postal_code" validate:"required"`
+	CountryId    string `json:"country_id" validate:"required,uuid"`
+}
+
+type UpdateCustomerAddressesBodyPayload struct {
+	Addresses []UpdateCustomerAddressesBody `json:"addresses" validate:"required"`
+}
+
 func GetCustomerType(c *gin.Context) {
 	data := []models.CustomerType{}
 	db.PSQL.Find(&data)
@@ -180,6 +193,7 @@ func CreateCustomerAddress(c *gin.Context) {
 
 			if !exist {
 				helpers.ThrowNotFoundError(c, fmt.Sprintf("Country with id %s not found (at index %d)", address.CountryId, index))
+				c.Abort()
 				return errors.New("country not found")
 			}
 
@@ -242,4 +256,64 @@ func CreateContacts(c *gin.Context) {
 	})
 
 	c.Set("data", body)
+}
+
+func UpdateCustomerAddresses(c *gin.Context) {
+	customerId := c.Param("id")
+	partyId := c.Query("party_id")
+
+	var body UpdateCustomerAddressesBodyPayload
+
+	c.ShouldBindBodyWith(&body, binding.JSON)
+
+	_, exist := customer_repository.GetCustomerByIdAndPartyId(customerId, partyId)
+
+	if !exist {
+		helpers.ThrowNotFoundError(c, fmt.Sprintf("Customer with id %s not found", customerId))
+		return
+	}
+
+	db.PSQL.Transaction(func(tx *gorm.DB) error {
+
+		for index, address := range body.Addresses {
+			err := initializers.Validate.Struct(address)
+
+			if err != nil {
+				c.JSON(400, gin.H{"error": err.Error() + " at index " + fmt.Sprint(index)})
+				c.Abort()
+				return errors.New("validation error")
+			}
+
+			_, addressExist := customer_repository.GetCustomerAddressById(address.ID, customerId)
+
+			if !addressExist {
+				helpers.ThrowNotFoundError(c, fmt.Sprintf("Address with id %s not found (at index %d)", address.ID, index))
+				c.Abort()
+				return errors.New("address not found")
+			}
+
+			_, exist := countries.FindById(address.CountryId)
+
+			if !exist {
+				helpers.ThrowNotFoundError(c, fmt.Sprintf("Country with id %s not found (at index %d)", address.CountryId, index))
+				c.Abort()
+				return errors.New("country not found")
+			}
+
+			var data models.CustomerAddresses = models.CustomerAddresses{
+				ID:           address.ID,
+				AddressLine1: address.AddressLine1,
+				AddressLine2: address.AddressLine2,
+				AddressLine3: &address.AddressLine3,
+				PostalCode:   address.PostalCode,
+				CountryId:    address.CountryId,
+				CustomerId:   customerId,
+			}
+
+			tx.Clauses(clause.Returning{}).Save(&data)
+		}
+		return nil
+	})
+
+	c.Set("data", body.Addresses)
 }

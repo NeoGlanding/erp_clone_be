@@ -16,3 +16,17 @@ func GetCustomerByIdAndPartyId(id string, party_id string) (models.Customer, boo
 
 	return data, true
 }
+
+func GetCustomerAddressById(customerAddressId string, customerId string) (models.CustomerAddresses, bool) {
+
+	var data models.CustomerAddresses
+
+	result := db.PSQL.Table("customer_addresses").Where("id = ? AND customer_id = ?", customerAddressId, customerId).Find(&data)
+
+	if result.RowsAffected == 0 {
+		return data, false
+	}
+
+	return data, true
+
+}
