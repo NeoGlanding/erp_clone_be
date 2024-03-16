@@ -7,9 +7,11 @@ import (
 	"github.com/automa8e_clone/db"
 	"github.com/automa8e_clone/helpers"
 	"github.com/automa8e_clone/initializers"
+	"github.com/automa8e_clone/middlewares"
 	"github.com/automa8e_clone/models"
 	"github.com/automa8e_clone/repositories/countries"
 	customer_repository "github.com/automa8e_clone/repositories/customers"
+	"github.com/automa8e_clone/types"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/golang-jwt/jwt"
@@ -84,6 +86,11 @@ type UpdateCustomerContactsBody struct {
 
 type UpdateCustomerContactBodyPayload struct {
 	Contacts []UpdateCustomerContactsBody `json:"contacts" validate:"required,dive,required"`
+}
+
+type ReturnCustomers struct {
+	Data       []models.Customer        `json:"data"`
+	Pagination types.PaginationResponse `json:"pagination"`
 }
 
 func GetCustomerType(c *gin.Context) {
@@ -403,5 +410,44 @@ func GetCustomer(c *gin.Context) {
 }
 
 func GetCustomers(c *gin.Context) {
+
+	paginationCtx, _ := c.Get("pagination")
+	pagination := paginationCtx.(types.PaginationQuery)
+
+	partyId := c.Query("party_id")
+
+	queryCtx, _ := c.Get("query")
+	query := queryCtx.(middlewares.TypeQueryMiddleware)
+
+	var data []models.Customer
+	var count int64
+
+	base := db.PSQL.
+		Table("customers").
+		Where("party_id = ?", partyId)
+
+	if query.SearchExist {
+		base = base.Where("LOWER(name) LIKE LOWER(?)", query.Search)
+	}
+
+	if query.SortByExist {
+		base = base.Order(fmt.Sprintf("%s %s", query.SortBy, query.SortDirection))
+	}
+
+	base.Count(&count).
+		Preload("Country").
+		Preload("Party").
+		Preload("File").
+		Offset(pagination.Offset).Limit(pagination.PageSize).Find(&data)
+
+	c.Set("data", ReturnCustomers{
+		Data: data,
+		Pagination: types.PaginationResponse{
+			TotalData:   count,
+			TotalPage:   helpers.FindTotalPage(count, pagination.PageSize),
+			CurrentPage: pagination.Page,
+			PageSize:    pagination.PageSize,
+		},
+	})
 
 }

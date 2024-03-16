@@ -9,6 +9,13 @@ import (
 func Customer(c *gin.Engine) {
 	customer := c.Group("/customers")
 
+	customer.GET("/", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, middlewares.InterceptPartyIdFromQueryRequired,
+		middlewares.PartyAuthorizationRole([]string{"admin", "owner", "viewer"}), middlewares.PaginationMiddleware,
+		middlewares.QueryMiddleware, controllers.GetCustomers, middlewares.ResponseMiddlewares)
+
+	customer.GET("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, middlewares.InterceptPartyIdFromQueryRequired,
+		middlewares.PartyAuthorizationRole([]string{"admin", "owner", "viewer"}), controllers.GetCustomer, middlewares.ResponseMiddlewares)
+
 	customer.GET("/types", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, controllers.GetCustomerType, middlewares.ResponseMiddlewares)
 	customer.GET("/partnerships", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, controllers.GetCustomerPartnership, middlewares.ResponseMiddlewares)
 
@@ -40,6 +47,4 @@ func Customer(c *gin.Engine) {
 		middlewares.InterceptPartyIdFromQueryRequired, middlewares.PartyAuthorizationRole([]string{"admin", "owner"}),
 		controllers.UpdateContacts, middlewares.ResponseMiddlewares)
 
-	customer.GET("/:id", middlewares.TokenAuthenticationMiddleware, middlewares.OnboardedAuthorization, middlewares.InterceptPartyIdFromQueryRequired,
-		middlewares.PartyAuthorizationRole([]string{"admin", "owner", "viewer"}), controllers.GetCustomer, middlewares.ResponseMiddlewares)
 }
