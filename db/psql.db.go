@@ -23,6 +23,8 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.CustomerAddresses{})
 	PSQL.AutoMigrate(&models.CustomerContact{})
 	PSQL.AutoMigrate(&models.Item{})
+	PSQL.AutoMigrate(&models.ItemPrice{})
+	PSQL.AutoMigrate(&models.Currency{})
 }
 
 func PSQLSeed() {
@@ -55,6 +57,16 @@ func PSQLSeed() {
 
 	if cpStackErr != nil {
 		fmt.Println("No error")
+	}
+
+	currencySeeder := models.NewCurrencySeeder(gorm_seeder.SeederConfiguration{})
+	currencyStack := gorm_seeder.NewSeedersStack(PSQL)
+	currencyStack.AddSeeder(&currencySeeder)
+
+	currencyStackErr := currencyStack.Seed()
+
+	if currencyStackErr != nil {
+		fmt.Println("Error seeding currencies:", currencyStackErr)
 	}
 
 }

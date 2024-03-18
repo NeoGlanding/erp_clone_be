@@ -22,6 +22,8 @@ type Item struct {
 
 	Active bool `json:"active"`
 
+	ItemPrice []ItemPrice `json:"item_prices" gorm:"foreignKey:ItemId"`
+
 	CreatedAt time.Time       `json:"created_at" gorm:"<-:create"`
 	UpdatedAt *time.Time      `json:"updated_at"`
 	DeletedAt *gorm.DeletedAt `json:"-"`
