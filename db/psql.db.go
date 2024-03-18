@@ -22,6 +22,7 @@ func PSQLMigrate() {
 	PSQL.AutoMigrate(&models.Customer{})
 	PSQL.AutoMigrate(&models.CustomerAddresses{})
 	PSQL.AutoMigrate(&models.CustomerContact{})
+	PSQL.AutoMigrate(&models.Item{})
 }
 
 func PSQLSeed() {
