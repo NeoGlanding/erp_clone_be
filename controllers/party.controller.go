@@ -23,47 +23,47 @@ import (
 )
 
 type PartyListElement struct {
-	ID				string			`json:"id"`
-	Name			string			`json:"name"`
-	Country			string			`json:"country"`
-	AddressLine1	string			`json:"address_line_1"`
-	CreatedAt		time.Time		`json:"created_at"`
-	Permission		string			`json:"permission"`
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	Country      string    `json:"country"`
+	AddressLine1 string    `json:"address_line_1"`
+	CreatedAt    time.Time `json:"created_at"`
+	Permission   string    `json:"permission"`
 }
 
 type PartyUserElement struct {
-	ID				string			`json:"id"`
-	FirstName		string			`json:"first_name"`
-	Surname			string			`json:"surname"`
-	Email			string			`json:"email"`
-	PostalCode		string			`json:"postal_code"`
-	Country			string			`json:"country"`
-	Permission		string			`json:"permission"`
+	ID         string `json:"id"`
+	FirstName  string `json:"first_name"`
+	Surname    string `json:"surname"`
+	Email      string `json:"email"`
+	PostalCode string `json:"postal_code"`
+	Country    string `json:"country"`
+	Permission string `json:"permission"`
 }
 type ReturnParties struct {
-	Data       []PartyListElement 	`json:"data"`
+	Data       []PartyListElement       `json:"data"`
 	Pagination types.PaginationResponse `json:"pagination"`
 }
 
 type ReturnPartyUsers struct {
-	Data       []PartyUserElement 	`json:"data"`
+	Data       []PartyUserElement       `json:"data"`
 	Pagination types.PaginationResponse `json:"pagination"`
 }
 
 type BodyPostParty struct {
-	CompanyName  string `validate:"required" json:"company_name"`
-	AddressLine1 string `validate:"required" json:"address_line_1"`
-	AddressLine2 string `json:"address_line_2"`
-	AddressLine3 string `json:"address_line_3"`
-	PostalCode   string `json:"postal_code"`
-	CountryId    string `json:"country_id"`
-	FileId		 *string`json:"file_id,omitempty" validate:"omitempty,uuid"`
+	CompanyName  string  `validate:"required" json:"company_name"`
+	AddressLine1 string  `validate:"required" json:"address_line_1"`
+	AddressLine2 string  `json:"address_line_2"`
+	AddressLine3 string  `json:"address_line_3"`
+	PostalCode   string  `json:"postal_code"`
+	CountryId    string  `json:"country_id"`
+	FileId       *string `json:"file_id,omitempty" validate:"omitempty,uuid"`
 }
 
 type BodyPostAction struct {
-	PartyId		string		`json:"party_id" validate:"required,uuid"`
-	Action		string		`json:"action" validate:"oneof=revoke viewer revoke_admin admin"`
-	UserEmails	[]string	`json:"user_emails" validate:"required,min=1,dive,email"`
+	PartyId    string   `json:"party_id" validate:"required,uuid"`
+	Action     string   `json:"action" validate:"oneof=revoke viewer revoke_admin admin"`
+	UserEmails []string `json:"user_emails" validate:"required,min=1,dive,email"`
 }
 
 func GetParties(c *gin.Context) {
@@ -80,32 +80,28 @@ func GetParties(c *gin.Context) {
 	queryCtx, _ := c.Get("query")
 	query := queryCtx.(middlewares.TypeQueryMiddleware)
 
-
 	base := db.PSQL.
-	Table("user_party_permissions AS upp").
-	Unscoped().
-	Joins("JOIN parties ON parties.id = upp.party_id").
-	Joins("JOIN countries ON parties.country_id = countries.id").
-	Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country, upp.permission").
-	Where("upp.user_id = ?", user["sub"]).
-	Where("upp.deleted_at IS NULL")
+		Table("user_party_permissions AS upp").
+		Unscoped().
+		Joins("JOIN parties ON parties.id = upp.party_id").
+		Joins("JOIN countries ON parties.country_id = countries.id").
+		Select("parties.id, parties.name, parties.created_at, parties. postal_code, parties.address_line1, countries.name AS country, upp.permission").
+		Where("upp.user_id = ?", user["sub"]).
+		Where("upp.deleted_at IS NULL")
 
-
-	
-	if query.SearchExist{
+	if query.SearchExist {
 		base = base.Where("LOWER(parties.name) LIKE LOWER(?) OR Lower(parties.address_line1) LIKE LOWER(?) OR Lower(parties.address_line2) LIKE LOWER(?) OR Lower(parties.address_line3) LIKE LOWER(?)", query.Search, query.Search, query.Search, query.Search)
 	}
-	
+
 	if query.SortByExist {
 		base = base.Order(fmt.Sprintf("%s %s", query.SortBy, query.SortDirection))
 	}
-	
-	base.
-	Count(&count).
-	Offset(pagination.Offset).
-	Limit(pagination.PageSize).
-	Find(&data)
 
+	base.
+		Count(&count).
+		Offset(pagination.Offset).
+		Limit(pagination.PageSize).
+		Find(&data)
 
 	response := ReturnParties{
 		Data: data,
@@ -143,11 +139,10 @@ func PostParty(c *gin.Context) {
 		AddressLine3: &body.AddressLine3,
 		PostalCode:   body.PostalCode,
 		CountryId:    body.CountryId,
-		FileId: body.FileId,
+		FileId:       body.FileId,
 	}
 
 	var partyReturn models.Party
-
 
 	resultParty := db.PSQL.Clauses(clause.Returning{}).Preload("Country").Create(&party)
 	db.PSQL.Preload("Country").Preload("File").Where("id = ?", party.ID).Find(&partyReturn)
@@ -178,7 +173,7 @@ func PostParty(c *gin.Context) {
 }
 
 func UpdateParty(c *gin.Context) {
-	id := c.Param("id");
+	id := c.Param("id")
 	userCtx, _ := c.Get("user")
 
 	user := userCtx.(jwt.MapClaims)
@@ -205,21 +200,22 @@ func UpdateParty(c *gin.Context) {
 		return
 	}
 
-	_, exist := countries.FindById(body.CountryId); if !exist {
+	_, exist := countries.FindById(body.CountryId)
+	if !exist {
 		helpers.SetBadRequestError(c, "Country ID is not found")
 		return
 	}
 
 	var data models.Party
 	var args models.Party = models.Party{
-		ID: id,
-		Name: body.CompanyName,
+		ID:           id,
+		Name:         body.CompanyName,
 		AddressLine1: body.AddressLine1,
 		AddressLine2: &body.AddressLine2,
 		AddressLine3: &body.AddressLine3,
-		PostalCode: body.PostalCode,
-		CountryId: body.CountryId,
-		FileId: body.FileId,
+		PostalCode:   body.PostalCode,
+		CountryId:    body.CountryId,
+		FileId:       body.FileId,
 	}
 
 	db.PSQL.Model(&models.Party{}).Where("id = ?", id).Save(&args)
@@ -232,18 +228,19 @@ func UpdateParty(c *gin.Context) {
 func GetParty(c *gin.Context) {
 	id := c.Param("id")
 
-	userCtx, _ := c.Get("user"); user := userCtx.(jwt.MapClaims)
+	userCtx, _ := c.Get("user")
+	user := userCtx.(jwt.MapClaims)
 
 	var data models.UserPartyPermission
 
-	query := db.PSQL.Where("user_id = ? AND party_id = ?", user["sub"], id).Find(&data);
+	query := db.PSQL.Where("user_id = ? AND party_id = ?", user["sub"], id).Find(&data)
 
 	if query.RowsAffected == 0 {
-		helpers.SetNotFoundError(c,"Party not found")
+		helpers.SetNotFoundError(c, "Party not found")
 		return
 	}
 
-	var party models.Party;
+	var party models.Party
 
 	db.PSQL.Preload("File").Preload("Country").Where("id = ?", id).Find(&party)
 
@@ -251,16 +248,16 @@ func GetParty(c *gin.Context) {
 }
 
 func PartyAction(c *gin.Context) {
-	var body BodyPostAction;
+	var body BodyPostAction
 
-	userCtx, _ := c.Get("user"); myUser := userCtx.(jwt.MapClaims)
+	userCtx, _ := c.Get("user")
+	myUser := userCtx.(jwt.MapClaims)
 
 	c.ShouldBindBodyWith(&body, binding.JSON)
 
 	fmt.Println(body)
 
-	err := initializers.Validate.Struct(body);
-
+	err := initializers.Validate.Struct(body)
 
 	// if body.Action != "viewer" {
 	// 	helpers.SetForbiddenError(c, "Forbidden resources")
@@ -274,7 +271,6 @@ func PartyAction(c *gin.Context) {
 
 	err = db.PSQL.Transaction(func(tx *gorm.DB) error {
 
-		
 		for _, email := range body.UserEmails {
 			var user models.User
 			err := tx.Where("email = ?", email).First(&user).Error
@@ -296,17 +292,17 @@ func PartyAction(c *gin.Context) {
 			fmt.Println(permission)
 
 			value := models.UserPartyPermission{
-				UserId: user.Id,
-				PartyId: body.PartyId,
+				UserId:     user.Id,
+				PartyId:    body.PartyId,
 				Permission: "VIEWER",
 			}
 
-			if (body.Action == "admin") {
+			if body.Action == "admin" {
 				value.Permission = "ADMIN"
 			}
 
 			var query *gorm.DB
-			
+
 			if body.Action == "viewer" {
 				query = tx.Table("user_party_permissions").Where("user_id = ? AND party_id = ? AND permission = 'VIEWER'", value.UserId, value.PartyId).FirstOrCreate(&value)
 			} else if body.Action == "revoke" {
@@ -334,7 +330,7 @@ func PartyAction(c *gin.Context) {
 	})
 
 	if err != nil {
-		helpers.SetBadRequestError(c,err.Error())
+		helpers.SetBadRequestError(c, err.Error())
 		c.Next()
 	} else {
 		c.Set("data", "Successfully modify access")
@@ -343,23 +339,25 @@ func PartyAction(c *gin.Context) {
 }
 
 func GetPartyUsers(c *gin.Context) {
-	id := c.Param("id");
-	paginationCtx, _ := c.Get("pagination"); pagination := paginationCtx.(types.PaginationQuery)
-	queryCtx, _ := c.Get("query"); query := queryCtx.(middlewares.TypeQueryMiddleware)
+	id := c.Param("id")
+	paginationCtx, _ := c.Get("pagination")
+	pagination := paginationCtx.(types.PaginationQuery)
+	queryCtx, _ := c.Get("query")
+	query := queryCtx.(middlewares.TypeQueryMiddleware)
 
-	var data []PartyUserElement;
-	var count int64;
+	var data []PartyUserElement
+	var count int64
 
 	fmt.Println("pagination -> ", pagination)
 	fmt.Println("query -> ", query)
 
 	base := db.PSQL.Table("user_party_permissions AS upp").
-			Joins("JOIN users ON users.id = upp.user_id").
-			Joins("JOIN user_details AS details ON details.user_id = users.id").
-			Joins("JOIN countries ON countries.id = details.country_id").
-			Select("users.id, details.first_name, details.surname, users.email, details.postal_code, countries.name AS country, upp.permission").
-			Order("CASE upp.permission WHEN 'OWNER' THEN 1 WHEN 'ADMIN' THEN 2 WHEN 'VIEWER' THEN 3 ELSE 4 END").
-			Where("upp.party_id = ?", id)
+		Joins("JOIN users ON users.id = upp.user_id").
+		Joins("JOIN user_details AS details ON details.user_id = users.id").
+		Joins("JOIN countries ON countries.id = details.country_id").
+		Select("users.id, details.first_name, details.surname, users.email, details.postal_code, countries.name AS country, upp.permission").
+		Order("CASE upp.permission WHEN 'OWNER' THEN 1 WHEN 'ADMIN' THEN 2 WHEN 'VIEWER' THEN 3 ELSE 4 END").
+		Where("upp.party_id = ?", id)
 
 	if query.SearchExist {
 		base = base.Where("LOWER(details.first_name) LIKE LOWER(?) OR LOWER(details.surname) LIKE LOWER(?) OR LOWER(users.email) LIKE LOWER(?)", query.Search, query.Search, query.Search)
@@ -374,10 +372,10 @@ func GetPartyUsers(c *gin.Context) {
 	response := ReturnPartyUsers{
 		Data: data,
 		Pagination: types.PaginationResponse{
-			TotalData: count,
-			TotalPage: int(helpers.FindTotalPage(count, pagination.PageSize)),
+			TotalData:   count,
+			TotalPage:   int(helpers.FindTotalPage(count, pagination.PageSize)),
 			CurrentPage: pagination.Page,
-			PageSize: pagination.PageSize,
+			PageSize:    pagination.PageSize,
 		},
 	}
 
